@@ -4,6 +4,10 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -24,6 +28,7 @@ const METRIC_LABEL: Record<string, string> = {
 // Server Components can't pass functions to Client Components (RSC serialization boundary),
 // so the formatter is selected here from a plain string prop instead of being passed in.
 export type ChartFormat = "brl" | "number" | "decimal1";
+export type ChartVariant = "area" | "line" | "bar";
 
 const FORMATTERS: Record<ChartFormat, (v: number) => string> = {
   brl: (v) => formatBRL(v),
@@ -38,16 +43,53 @@ export function TimeSeriesChart<T extends Point>({
   data,
   metricKey,
   format,
+  variant = "area",
   color = "var(--color-primary)",
 }: {
   title: string;
   data: T[];
   metricKey: keyof T & string;
   format: ChartFormat;
+  variant?: ChartVariant;
   color?: string;
 }) {
   const gradientId = `grad-${metricKey}`;
   const formatter = FORMATTERS[format];
+
+  const xAxis = (
+    <XAxis
+      dataKey="date"
+      tickFormatter={(d) => formatDate(d).replace(".", "")}
+      tick={{ fontSize: 11, fill: "var(--color-muted)" }}
+      axisLine={false}
+      tickLine={false}
+      minTickGap={24}
+    />
+  );
+  const yAxis = (
+    <YAxis
+      tick={{ fontSize: 11, fill: "var(--color-muted)" }}
+      axisLine={false}
+      tickLine={false}
+      width={56}
+      tickFormatter={(v) => formatter(v)}
+    />
+  );
+  const grid = <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />;
+  const tooltip = (
+    <Tooltip
+      contentStyle={{
+        background: "var(--color-surface)",
+        border: "1px solid var(--color-border)",
+        borderRadius: 12,
+        fontSize: 12,
+      }}
+      cursor={{ fill: "var(--color-surface-2)", opacity: variant === "bar" ? 1 : 0.5 }}
+      labelFormatter={(d) => formatDate(d as string)}
+      formatter={(v) => [formatter(Number(v)), METRIC_LABEL[metricKey] ?? title]}
+    />
+  );
+  const margin = { top: 8, right: 16, left: 0, bottom: 0 };
 
   return (
     <Card>
@@ -61,47 +103,50 @@ export function TimeSeriesChart<T extends Point>({
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={color} stopOpacity={0.35} />
-                  <stop offset="95%" stopColor={color} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-              <XAxis
-                dataKey="date"
-                tickFormatter={(d) => formatDate(d).replace(".", "")}
-                tick={{ fontSize: 11, fill: "var(--color-muted)" }}
-                axisLine={false}
-                tickLine={false}
-                minTickGap={24}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: "var(--color-muted)" }}
-                axisLine={false}
-                tickLine={false}
-                width={56}
-                tickFormatter={(v) => formatter(v)}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "var(--color-surface)",
-                  border: "1px solid var(--color-border)",
-                  borderRadius: 12,
-                  fontSize: 12,
-                }}
-                labelFormatter={(d) => formatDate(d as string)}
-                formatter={(v) => [formatter(Number(v)), METRIC_LABEL[metricKey] ?? title]}
-              />
-              <Area
-                type="monotone"
-                dataKey={metricKey as string}
-                stroke={color}
-                fill={`url(#${gradientId})`}
-                strokeWidth={2}
-              />
-            </AreaChart>
+            {variant === "line" ? (
+              <LineChart data={data} margin={margin}>
+                {grid}
+                {xAxis}
+                {yAxis}
+                {tooltip}
+                <Line
+                  type="monotone"
+                  dataKey={metricKey as string}
+                  stroke={color}
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
+              </LineChart>
+            ) : variant === "bar" ? (
+              <BarChart data={data} margin={margin}>
+                {grid}
+                {xAxis}
+                {yAxis}
+                {tooltip}
+                <Bar dataKey={metricKey as string} fill={color} radius={[4, 4, 0, 0]} maxBarSize={28} />
+              </BarChart>
+            ) : (
+              <AreaChart data={data} margin={margin}>
+                <defs>
+                  <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={color} stopOpacity={0.35} />
+                    <stop offset="95%" stopColor={color} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                {grid}
+                {xAxis}
+                {yAxis}
+                {tooltip}
+                <Area
+                  type="monotone"
+                  dataKey={metricKey as string}
+                  stroke={color}
+                  fill={`url(#${gradientId})`}
+                  strokeWidth={2}
+                />
+              </AreaChart>
+            )}
           </ResponsiveContainer>
         )}
       </CardContent>

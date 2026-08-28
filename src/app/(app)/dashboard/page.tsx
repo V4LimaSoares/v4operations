@@ -2,11 +2,12 @@ import Link from "next/link";
 import { Wallet, Eye, MousePointerClick, Percent, TrendingUp, Target, Receipt, Ticket, Gauge } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { resolveScope } from "@/lib/scope";
-import { presetToRange, getSummaryWithComparison, getDailyTimeSeries, getCampaignPerformance } from "@/lib/data/metrics";
+import { presetToRange, getSummaryWithComparison, getDailyTimeSeries, getCampaignPerformance, getMetricsSummary } from "@/lib/data/metrics";
 import { PageHeader } from "@/components/layout/page-header";
 import { FiltersBar } from "@/components/layout/filters-bar";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { TimeSeriesChart } from "@/components/dashboard/time-series-chart";
+import { DonutChart } from "@/components/dashboard/donut-chart";
 import { PlatformBadge, DataSourceBadge, StatusBadge } from "@/components/dashboard/badges";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -24,13 +25,19 @@ export default async function DashboardPage({
   const range = presetToRange(params.period ?? "30d");
   const platform = (params.platform as Platform | "all") ?? "all";
 
-  const [{ current, previous }, series, campaigns] = await Promise.all([
+  const [{ current, previous }, series, campaigns, googleSummary, metaSummary] = await Promise.all([
     getSummaryWithComparison(scope, range, platform),
     getDailyTimeSeries(scope, range, platform),
     getCampaignPerformance(scope, range, platform),
+    getMetricsSummary(scope, range, "GOOGLE_ADS"),
+    getMetricsSummary(scope, range, "META_ADS"),
   ]);
 
   const topCampaigns = campaigns.slice(0, 5);
+  const investmentByPlatform = [
+    { name: "Google Ads", value: googleSummary.costBrl, color: "var(--color-google)" },
+    { name: "Meta Ads", value: metaSummary.costBrl, color: "var(--color-meta)" },
+  ];
 
   return (
     <div>
@@ -51,14 +58,15 @@ export default async function DashboardPage({
         <StatCard label="CPC" value={current.cpc} previousValue={previous.cpc} icon={Gauge} formatter={formatBRL} invertDelta />
         <StatCard label="CPM" value={current.cpm} previousValue={previous.cpm} icon={Gauge} formatter={formatBRL} invertDelta />
         <StatCard label="CPA" value={current.cpa} previousValue={previous.cpa} icon={Gauge} formatter={formatBRL} invertDelta />
+        <StatCard label="CAS" value={current.cpa} previousValue={previous.cpa} icon={Gauge} formatter={formatBRL} invertDelta />
         <StatCard label="Ticket médio" value={current.avgTicket} previousValue={previous.avgTicket} icon={Ticket} formatter={formatBRL} />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <TimeSeriesChart title="Investimento ao longo do tempo" data={series} metricKey="costBrl" format="brl" color="var(--color-primary)" />
-        <TimeSeriesChart title="Faturamento (valor de conversão) ao longo do tempo" data={series} metricKey="conversionValueBrl" format="brl" color="var(--color-positive)" />
-        <TimeSeriesChart title="Conversões ao longo do tempo" data={series} metricKey="conversions" format="decimal1" color="var(--color-info)" />
-        <TimeSeriesChart title="Cliques ao longo do tempo" data={series} metricKey="clicks" format="number" color="var(--color-warning)" />
+        <TimeSeriesChart title="Investimento ao longo do tempo" data={series} metricKey="costBrl" format="brl" variant="area" color="var(--color-primary)" />
+        <TimeSeriesChart title="Faturamento (valor de conversão) ao longo do tempo" data={series} metricKey="conversionValueBrl" format="brl" variant="line" color="var(--color-positive)" />
+        <TimeSeriesChart title="Conversões ao longo do tempo" data={series} metricKey="conversions" format="decimal1" variant="bar" color="var(--color-info)" />
+        <DonutChart title="Investimento por plataforma" data={investmentByPlatform} format="brl" />
       </div>
 
       <Card className="mt-6">

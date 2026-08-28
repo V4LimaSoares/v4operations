@@ -11,6 +11,7 @@ import {
   Building2,
   Search,
   AtSign,
+  HelpCircle,
 } from "lucide-react";
 
 export type NavItem = {
@@ -31,11 +32,13 @@ export const CLIENT_NAV: NavItem[] = [
   { href: "/campanhas", label: "Campanhas", icon: Megaphone },
   { href: "/insights", label: "Insights", icon: Lightbulb },
   { href: "/faturamento", label: "Faturamento", icon: Wallet },
+  { href: "/ajuda", label: "Ajuda", icon: HelpCircle },
   { href: "/configuracoes", label: "Configurações", icon: Settings },
 ];
 
 export const ADMIN_NAV: NavItem[] = [
   { href: "/admin", label: "Visão Geral", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/contas", label: "Contas", icon: Building2 },
   { href: "/google-ads", label: "Google Ads", icon: GoogleIcon },
@@ -45,5 +48,6 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/insights", label: "Insights", icon: Lightbulb },
   { href: "/faturamento", label: "Faturamento", icon: Wallet },
   { href: "/sincronizacoes", label: "Sincronizações", icon: RefreshCw },
+  { href: "/ajuda", label: "Ajuda", icon: HelpCircle },
   { href: "/configuracoes", label: "Configurações", icon: Settings },
 ];
