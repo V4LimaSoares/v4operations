@@ -43,6 +43,12 @@ enum InsightCategory {
   HIGHLIGHT
 }
 
+enum SearchTermStatus {
+  NONE
+  ADDED
+  EXCLUDED
+}
+
 enum SyncStatus {
   RUNNING
   SUCCESS
@@ -123,9 +129,10 @@ model AdAccount {
   connectedAt DateTime   @default(now())
   lastSyncAt  DateTime?
 
-  campaigns Campaign[]
-  metrics   Metric[]
-  syncLogs  SyncLog[]
+  campaigns   Campaign[]
+  metrics     Metric[]
+  syncLogs    SyncLog[]
+  searchTerms SearchTerm[]
 
   @@unique([platform, externalId])
   @@index([clientId])
@@ -144,10 +151,11 @@ model Campaign {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  adGroups AdGroup[]
-  ads      Ad[]
-  keywords Keyword[]
-  metrics  Metric[]
+  adGroups    AdGroup[]
+  ads         Ad[]
+  keywords    Keyword[]
+  metrics     Metric[]
+  searchTerms SearchTerm[]
 
   @@unique([adAccountId, externalId])
   @@index([adAccountId])
@@ -165,9 +173,10 @@ model AdGroup {
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
 
-  ads      Ad[]
-  keywords Keyword[]
-  metrics  Metric[]
+  ads         Ad[]
+  keywords    Keyword[]
+  metrics     Metric[]
+  searchTerms SearchTerm[]
 
   @@unique([campaignId, externalId])
   @@index([campaignId])
@@ -215,6 +224,34 @@ model Keyword {
   metrics Metric[]
 
   @@unique([adGroupId, externalId])
+  @@index([campaignId])
+}
+
+/// Google Ads Search Terms report — the actual queries that triggered an ad, as opposed to
+/// the keywords being bid on. A snapshot for a fetched period (not a daily fact table like
+/// Metric): refreshed wholesale on each sync, since the source report itself is always an
+/// aggregate over a date range rather than day-by-day line items.
+model SearchTerm {
+  id           String            @id @default(cuid())
+  adAccountId  String
+  adAccount    AdAccount         @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+  campaignId   String
+  campaign     Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  adGroupId    String?
+  adGroup      AdGroup?          @relation(fields: [adGroupId], references: [id], onDelete: Cascade)
+  text         String
+  status       SearchTermStatus  @default(NONE)
+  periodStart  DateTime          @db.Date
+  periodEnd    DateTime          @db.Date
+  impressions  Int               @default(0)
+  clicks       Int               @default(0)
+  costBrl      Decimal           @default(0) @db.Decimal(14, 2)
+  conversions  Decimal           @default(0) @db.Decimal(14, 2)
+  conversionValueBrl Decimal     @default(0) @db.Decimal(14, 2)
+  dataSource   DataSource        @default(DEMO)
+  fetchedAt    DateTime          @default(now())
+
+  @@index([adAccountId])
   @@index([campaignId])
 }
 

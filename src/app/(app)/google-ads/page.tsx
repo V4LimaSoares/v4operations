@@ -4,15 +4,16 @@ import { resolveScope } from "@/lib/scope";
 import { prisma } from "@/lib/prisma";
 import { presetToRange, getSummaryWithComparison, getDailyTimeSeries, getCampaignPerformance } from "@/lib/data/metrics";
 import { getKeywordPerformance } from "@/lib/data/adgroups";
+import { getSearchTerms } from "@/lib/data/search-terms";
 import { PageHeader } from "@/components/layout/page-header";
 import { FiltersBar } from "@/components/layout/filters-bar";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { TimeSeriesChart } from "@/components/dashboard/time-series-chart";
-import { StatusBadge, DataSourceBadge } from "@/components/dashboard/badges";
+import { StatusBadge, DataSourceBadge, SearchTermStatusBadge } from "@/components/dashboard/badges";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { formatBRL, formatNumber, formatPercent } from "@/lib/utils";
+import { formatBRL, formatNumber, formatPercent, formatDate } from "@/lib/utils";
 
 export default async function GoogleAdsPage({
   searchParams,
@@ -24,11 +25,12 @@ export default async function GoogleAdsPage({
   const scope = resolveScope(user, params.clientId);
   const range = presetToRange(params.period ?? "30d");
 
-  const [{ current, previous }, series, campaigns, keywords, accounts] = await Promise.all([
+  const [{ current, previous }, series, campaigns, keywords, searchTerms, accounts] = await Promise.all([
     getSummaryWithComparison(scope, range, "GOOGLE_ADS"),
     getDailyTimeSeries(scope, range, "GOOGLE_ADS"),
     getCampaignPerformance(scope, range, "GOOGLE_ADS"),
     getKeywordPerformance(scope, range),
+    getSearchTerms(scope),
     prisma.adAccount.findMany({
       where: { platform: "GOOGLE_ADS", clientId: scope.clientId ?? undefined },
       select: { id: true, name: true, externalId: true, dataSource: true, status: true, lastSyncAt: true, client: { select: { name: true } } },
@@ -36,6 +38,8 @@ export default async function GoogleAdsPage({
   ]);
 
   const topKeywords = keywords.slice(0, 10);
+  const topSearchTerms = searchTerms.slice(0, 15);
+  const searchTermsPeriod = searchTerms[0];
   const best = [...campaigns].sort((a, b) => b.roas - a.roas)[0];
   const worst = [...campaigns].filter((c) => c.costBrl > 0).sort((a, b) => a.roas - b.roas)[0];
 
@@ -159,6 +163,56 @@ export default async function GoogleAdsPage({
                       <TableCell className="text-right tabular-nums">{formatBRL(k.cpc)}</TableCell>
                       <TableCell className="text-right tabular-nums">{formatBRL(k.costBrl)}</TableCell>
                       <TableCell className="text-right tabular-nums">{formatNumber(k.conversions, 1)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Termos de pesquisa</CardTitle>
+              <p className="text-xs text-muted">
+                {searchTermsPeriod
+                  ? `Período sincronizado: ${formatDate(searchTermsPeriod.periodStart)} a ${formatDate(searchTermsPeriod.periodEnd)}`
+                  : "Nenhum termo de pesquisa sincronizado ainda."}
+              </p>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Termo pesquisado</TableHead>
+                    <TableHead>Campanha</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Impressões</TableHead>
+                    <TableHead className="text-right">Cliques</TableHead>
+                    <TableHead className="text-right">CTR</TableHead>
+                    <TableHead className="text-right">CPC</TableHead>
+                    <TableHead className="text-right">Custo</TableHead>
+                    <TableHead className="text-right">Conversões</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {topSearchTerms.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={9} className="py-8 text-center text-muted">
+                        Sem termos de pesquisa sincronizados. Peça ao Claude Code para rodar a sincronização via MCP.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {topSearchTerms.map((t) => (
+                    <TableRow key={t.id}>
+                      <TableCell className="font-medium">{t.text}</TableCell>
+                      <TableCell className="text-muted">{t.campaignName}</TableCell>
+                      <TableCell><SearchTermStatusBadge status={t.status} /></TableCell>
+                      <TableCell className="text-right tabular-nums">{formatNumber(t.impressions)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{formatNumber(t.clicks)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{formatPercent(t.ctr)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{formatBRL(t.cpc)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{formatBRL(t.costBrl)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{formatNumber(t.conversions, 1)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

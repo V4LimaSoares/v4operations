@@ -3,6 +3,8 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { randomDailyMetric, splitAcrossChildren } from "@/lib/demo/generator";
+import { generateSearchTermVariants, randomSearchTermStatus, randomSearchTermMetric } from "@/lib/demo/search-terms";
+import type { Prisma } from "@prisma/client";
 
 const schema = z.object({ adAccountId: z.string().min(1) });
 
@@ -71,6 +73,35 @@ export async function POST(req: Request) {
         await upsertMetric({ date: today, adAccountId: account.id, campaignId: campaign.id, adGroupId: adGroup.id, keywordId: keyword.id, platform: account.platform, ...kwMetric });
         recordsSynced++;
       }
+    }
+  }
+
+  if (account.platform === "GOOGLE_ADS") {
+    const periodEnd = today;
+    const periodStart = new Date(today);
+    periodStart.setDate(periodStart.getDate() - 29);
+
+    for (const campaign of campaigns) {
+      await prisma.searchTerm.deleteMany({ where: { campaignId: campaign.id } });
+      const rows: Prisma.SearchTermCreateManyInput[] = [];
+      for (const adGroup of campaign.adGroups) {
+        for (const keyword of adGroup.keywords) {
+          for (const text of generateSearchTermVariants(keyword.text, 2 + Math.floor(Math.random() * 2))) {
+            rows.push({
+              adAccountId: account.id,
+              campaignId: campaign.id,
+              adGroupId: adGroup.id,
+              text,
+              status: randomSearchTermStatus(),
+              periodStart,
+              periodEnd,
+              dataSource: "DEMO",
+              ...randomSearchTermMetric(20 + Math.random() * 40),
+            });
+          }
+        }
+      }
+      if (rows.length) await prisma.searchTerm.createMany({ data: rows });
     }
   }
 

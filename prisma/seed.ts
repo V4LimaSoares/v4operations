@@ -5,6 +5,7 @@
 import { PrismaClient, Prisma, type Platform } from "@prisma/client";
 import { hashPassword } from "../src/lib/auth";
 import { randomDailyMetric, splitAcrossChildren } from "../src/lib/demo/generator";
+import { generateSearchTermVariants, randomSearchTermStatus, randomSearchTermMetric } from "../src/lib/demo/search-terms";
 
 const prisma = new PrismaClient();
 
@@ -220,6 +221,28 @@ async function main() {
 
           if (adMetricRows.length) await prisma.metric.createMany({ data: adMetricRows });
           if (keywordMetricRows.length) await prisma.metric.createMany({ data: keywordMetricRows });
+
+          if (platform === "GOOGLE_ADS" && keywords.length) {
+            const periodEnd = dates[dates.length - 1];
+            const periodStart = dates[0];
+            const searchTermRows: Prisma.SearchTermCreateManyInput[] = [];
+            for (const keyword of keywords) {
+              for (const text of generateSearchTermVariants(keyword.text, 2 + Math.floor(Math.random() * 2))) {
+                searchTermRows.push({
+                  adAccountId: account.id,
+                  campaignId: campaign.id,
+                  adGroupId: adGroup.id,
+                  text,
+                  status: randomSearchTermStatus(),
+                  periodStart,
+                  periodEnd,
+                  dataSource: "DEMO",
+                  ...randomSearchTermMetric(20 + Math.random() * 40),
+                });
+              }
+            }
+            if (searchTermRows.length) await prisma.searchTerm.createMany({ data: searchTermRows });
+          }
         }
       }
     }
