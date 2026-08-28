@@ -1,0 +1,111 @@
+import Link from "next/link";
+import { Wallet, Eye, MousePointerClick, Percent, TrendingUp, Target, Receipt, Ticket, Gauge } from "lucide-react";
+import { requireUser } from "@/lib/session";
+import { resolveScope } from "@/lib/scope";
+import { presetToRange, getSummaryWithComparison, getDailyTimeSeries, getCampaignPerformance } from "@/lib/data/metrics";
+import { PageHeader } from "@/components/layout/page-header";
+import { FiltersBar } from "@/components/layout/filters-bar";
+import { StatCard } from "@/components/dashboard/stat-card";
+import { TimeSeriesChart } from "@/components/dashboard/time-series-chart";
+import { PlatformBadge, DataSourceBadge, StatusBadge } from "@/components/dashboard/badges";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { formatBRL, formatNumber, formatPercent } from "@/lib/utils";
+import type { Platform } from "@prisma/client";
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ period?: string; platform?: string; clientId?: string }>;
+}) {
+  const user = await requireUser();
+  const params = await searchParams;
+  const scope = resolveScope(user, params.clientId);
+  const range = presetToRange(params.period ?? "30d");
+  const platform = (params.platform as Platform | "all") ?? "all";
+
+  const [{ current, previous }, series, campaigns] = await Promise.all([
+    getSummaryWithComparison(scope, range, platform),
+    getDailyTimeSeries(scope, range, platform),
+    getCampaignPerformance(scope, range, platform),
+  ]);
+
+  const topCampaigns = campaigns.slice(0, 5);
+
+  return (
+    <div>
+      <PageHeader
+        title="Dashboard"
+        description={scope.isAggregate ? "Visão agregada de todos os clientes" : "Performance de campanhas no período selecionado"}
+        actions={<FiltersBar />}
+      />
+
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+        <StatCard label="Investimento" value={current.costBrl} previousValue={previous.costBrl} icon={Wallet} formatter={formatBRL} />
+        <StatCard label="Faturamento" value={current.revenueBrl} previousValue={previous.revenueBrl} icon={Receipt} formatter={formatBRL} />
+        <StatCard label="ROAS" value={current.roas} previousValue={previous.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
+        <StatCard label="Conversões" value={current.conversions} previousValue={previous.conversions} icon={Target} formatter={(v) => formatNumber(v, 1)} />
+        <StatCard label="Impressões" value={current.impressions} previousValue={previous.impressions} icon={Eye} formatter={(v) => formatNumber(v)} />
+        <StatCard label="Cliques" value={current.clicks} previousValue={previous.clicks} icon={MousePointerClick} formatter={(v) => formatNumber(v)} />
+        <StatCard label="CTR" value={current.ctr} previousValue={previous.ctr} icon={Percent} formatter={(v) => formatPercent(v)} />
+        <StatCard label="CPC" value={current.cpc} previousValue={previous.cpc} icon={Gauge} formatter={formatBRL} invertDelta />
+        <StatCard label="CPM" value={current.cpm} previousValue={previous.cpm} icon={Gauge} formatter={formatBRL} invertDelta />
+        <StatCard label="CPA" value={current.cpa} previousValue={previous.cpa} icon={Gauge} formatter={formatBRL} invertDelta />
+        <StatCard label="Ticket médio" value={current.avgTicket} previousValue={previous.avgTicket} icon={Ticket} formatter={formatBRL} />
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <TimeSeriesChart title="Investimento ao longo do tempo" data={series} metricKey="costBrl" format="brl" color="var(--color-primary)" />
+        <TimeSeriesChart title="Faturamento (valor de conversão) ao longo do tempo" data={series} metricKey="conversionValueBrl" format="brl" color="var(--color-positive)" />
+        <TimeSeriesChart title="Conversões ao longo do tempo" data={series} metricKey="conversions" format="decimal1" color="var(--color-info)" />
+        <TimeSeriesChart title="Cliques ao longo do tempo" data={series} metricKey="clicks" format="number" color="var(--color-warning)" />
+      </div>
+
+      <Card className="mt-6">
+        <CardHeader className="flex-row items-center justify-between">
+          <CardTitle>Campanhas com melhor investimento</CardTitle>
+          <Link href="/campanhas" className="text-xs font-medium text-primary hover:underline">
+            Ver todas
+          </Link>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Campanha</TableHead>
+                {scope.isAggregate && <TableHead>Cliente</TableHead>}
+                <TableHead>Plataforma</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Investimento</TableHead>
+                <TableHead className="text-right">Conversões</TableHead>
+                <TableHead className="text-right">ROAS</TableHead>
+                <TableHead>Origem</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {topCampaigns.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={8} className="py-8 text-center text-muted">
+                    Sem campanhas no período selecionado.
+                  </TableCell>
+                </TableRow>
+              )}
+              {topCampaigns.map((c) => (
+                <TableRow key={c.id}>
+                  <TableCell className="font-medium">{c.name}</TableCell>
+                  {scope.isAggregate && <TableCell className="text-muted">{c.clientName}</TableCell>}
+                  <TableCell><PlatformBadge platform={c.platform} /></TableCell>
+                  <TableCell><StatusBadge status={c.status} /></TableCell>
+                  <TableCell className="text-right tabular-nums">{formatBRL(c.costBrl)}</TableCell>
+                  <TableCell className="text-right tabular-nums">{formatNumber(c.conversions, 1)}</TableCell>
+                  <TableCell className="text-right tabular-nums">{c.roas.toFixed(2)}x</TableCell>
+                  <TableCell><DataSourceBadge dataSource={c.dataSource} /></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

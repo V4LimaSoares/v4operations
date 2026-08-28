@@ -1,0 +1,309 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enums ----------
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum ClientStatus {
+  ACTIVE
+  PAUSED
+  INACTIVE
+}
+
+enum Platform {
+  GOOGLE_ADS
+  META_ADS
+}
+
+enum DataSource {
+  DEMO
+  REAL
+}
+
+enum EntityStatus {
+  ENABLED
+  PAUSED
+  REMOVED
+}
+
+enum InsightCategory {
+  OPPORTUNITY
+  PROBLEM
+  ATTENTION
+  HIGHLIGHT
+}
+
+enum SyncStatus {
+  RUNNING
+  SUCCESS
+  ERROR
+}
+
+enum RevenueSource {
+  MANUAL
+  INTEGRATION
+}
+
+// ---------- Auth ----------
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         Role      @default(CLIENT)
+  clientId     String?
+  client       Client?   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  active       Boolean   @default(true)
+  sessionVersion Int     @default(0)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  resetTokens  PasswordResetToken[]
+  syncLogsTriggered SyncLog[]
+
+  @@index([clientId])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ---------- Core tenant model ----------
+
+model Client {
+  id        String       @id @default(cuid())
+  name      String
+  company   String
+  status    ClientStatus @default(ACTIVE)
+  notes     String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  users        User[]
+  adAccounts   AdAccount[]
+  revenueEntries RevenueEntry[]
+  insights     Insight[]
+
+  @@index([status])
+}
+
+// ---------- Ad platform hierarchy ----------
+
+model AdAccount {
+  id          String     @id @default(cuid())
+  clientId    String
+  client      Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  platform    Platform
+  externalId  String // Google customer_id (10 digits) or Meta act_xxx
+  name        String
+  currency    String     @default("BRL")
+  timezone    String?
+  dataSource  DataSource @default(DEMO)
+  status      EntityStatus @default(ENABLED)
+  connectedAt DateTime   @default(now())
+  lastSyncAt  DateTime?
+
+  campaigns Campaign[]
+  metrics   Metric[]
+  syncLogs  SyncLog[]
+
+  @@unique([platform, externalId])
+  @@index([clientId])
+}
+
+model Campaign {
+  id          String       @id @default(cuid())
+  adAccountId String
+  adAccount   AdAccount    @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+  externalId  String
+  name        String
+  status      EntityStatus @default(ENABLED)
+  objective   String?
+  budgetDailyBrl Decimal?  @db.Decimal(14, 2)
+  dataSource  DataSource   @default(DEMO)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  adGroups AdGroup[]
+  ads      Ad[]
+  keywords Keyword[]
+  metrics  Metric[]
+
+  @@unique([adAccountId, externalId])
+  @@index([adAccountId])
+}
+
+/// Represents a Google Ads "Ad Group" or a Meta "Ad Set" (unified by parent platform)
+model AdGroup {
+  id         String       @id @default(cuid())
+  campaignId String
+  campaign   Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  externalId String
+  name       String
+  status     EntityStatus @default(ENABLED)
+  dataSource DataSource   @default(DEMO)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  ads      Ad[]
+  keywords Keyword[]
+  metrics  Metric[]
+
+  @@unique([campaignId, externalId])
+  @@index([campaignId])
+}
+
+model Ad {
+  id           String       @id @default(cuid())
+  campaignId   String
+  campaign     Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  adGroupId    String
+  adGroup      AdGroup      @relation(fields: [adGroupId], references: [id], onDelete: Cascade)
+  externalId   String
+  name         String
+  status       EntityStatus @default(ENABLED)
+  headline     String?
+  description  String?
+  imageUrl     String?
+  creativeType String?
+  dataSource   DataSource   @default(DEMO)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  metrics Metric[]
+
+  @@unique([adGroupId, externalId])
+  @@index([campaignId])
+  @@index([adGroupId])
+}
+
+/// Google Ads only — keywords do not exist on Meta
+model Keyword {
+  id           String       @id @default(cuid())
+  campaignId   String
+  campaign     Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  adGroupId    String
+  adGroup      AdGroup      @relation(fields: [adGroupId], references: [id], onDelete: Cascade)
+  externalId   String
+  text         String
+  matchType    String
+  status       EntityStatus @default(ENABLED)
+  qualityScore Int?
+  dataSource   DataSource   @default(DEMO)
+  createdAt    DateTime     @default(now())
+
+  metrics Metric[]
+
+  @@unique([adGroupId, externalId])
+  @@index([campaignId])
+}
+
+/// Single denormalized daily metrics fact table, scoped by whichever entity level it belongs to.
+model Metric {
+  id         String   @id @default(cuid())
+  date       DateTime @db.Date
+
+  adAccountId String
+  adAccount   AdAccount @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+  campaignId  String?
+  campaign    Campaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  adGroupId   String?
+  adGroup     AdGroup?  @relation(fields: [adGroupId], references: [id], onDelete: Cascade)
+  adId        String?
+  ad          Ad?       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  keywordId   String?
+  keyword     Keyword?  @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+
+  platform        Platform
+  impressions     Int      @default(0)
+  clicks          Int      @default(0)
+  costBrl         Decimal  @default(0) @db.Decimal(14, 2)
+  conversions     Decimal  @default(0) @db.Decimal(14, 2)
+  conversionValueBrl Decimal @default(0) @db.Decimal(14, 2)
+  reach           Int?
+  frequency       Float?
+  videoViews      Int?
+  leads           Int?
+
+  dataSource DataSource @default(DEMO)
+  createdAt  DateTime   @default(now())
+
+  @@index([adAccountId, date])
+  @@index([campaignId, date])
+  @@index([adGroupId, date])
+  @@index([adId, date])
+  @@index([keywordId, date])
+  @@index([date])
+}
+
+// ---------- Revenue / faturamento ----------
+
+model RevenueEntry {
+  id        String        @id @default(cuid())
+  clientId  String
+  client    Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  date      DateTime      @db.Date
+  amountBrl Decimal       @db.Decimal(14, 2)
+  source    RevenueSource @default(MANUAL)
+  notes     String?
+  createdAt DateTime      @default(now())
+
+  @@index([clientId, date])
+}
+
+// ---------- Insights ----------
+
+model Insight {
+  id          String           @id @default(cuid())
+  clientId    String
+  client      Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  category    InsightCategory
+  title       String
+  description String
+  platform    Platform?
+  dataSource  DataSource       @default(DEMO)
+  generatedAt DateTime         @default(now())
+  dismissed   Boolean          @default(false)
+
+  @@index([clientId, generatedAt])
+}
+
+// ---------- Sync tracking ----------
+
+model SyncLog {
+  id            String     @id @default(cuid())
+  adAccountId   String
+  adAccount     AdAccount  @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+  platform      Platform
+  status        SyncStatus @default(RUNNING)
+  startedAt     DateTime   @default(now())
+  finishedAt    DateTime?
+  recordsSynced Int?
+  errorMessage  String?
+  triggeredById String?
+  triggeredBy   User?      @relation(fields: [triggeredById], references: [id], onDelete: SetNull)
+  triggeredByLabel String? // e.g. "claude-mcp" when triggered outside the app
+  dataSource    DataSource @default(DEMO)
+
+  @@index([adAccountId, startedAt])
+}
