@@ -5,10 +5,12 @@ import { prisma } from "@/lib/prisma";
 import { presetToRange, getSummaryWithComparison, getDailyTimeSeries, getCampaignPerformance } from "@/lib/data/metrics";
 import { getKeywordPerformance } from "@/lib/data/adgroups";
 import { getSearchTerms } from "@/lib/data/search-terms";
+import { getFunnelData } from "@/lib/data/funnel";
 import { PageHeader } from "@/components/layout/page-header";
 import { FiltersBar } from "@/components/layout/filters-bar";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { TimeSeriesChart } from "@/components/dashboard/time-series-chart";
+import { FunnelChart } from "@/components/dashboard/funnel-chart";
 import { StatusBadge, DataSourceBadge, SearchTermStatusBadge } from "@/components/dashboard/badges";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -25,12 +27,13 @@ export default async function GoogleAdsPage({
   const scope = resolveScope(user, params.clientId);
   const range = presetToRange(params.period ?? "30d");
 
-  const [{ current, previous }, series, campaigns, keywords, searchTerms, accounts] = await Promise.all([
+  const [{ current, previous }, series, campaigns, keywords, searchTerms, funnel, accounts] = await Promise.all([
     getSummaryWithComparison(scope, range, "GOOGLE_ADS"),
     getDailyTimeSeries(scope, range, "GOOGLE_ADS"),
     getCampaignPerformance(scope, range, "GOOGLE_ADS"),
     getKeywordPerformance(scope, range),
     getSearchTerms(scope),
+    scope.clientId ? getFunnelData(scope) : Promise.resolve(null),
     prisma.adAccount.findMany({
       where: { platform: "GOOGLE_ADS", clientId: scope.clientId ?? undefined },
       select: { id: true, name: true, externalId: true, dataSource: true, status: true, lastSyncAt: true, client: { select: { name: true } } },
@@ -74,6 +77,20 @@ export default async function GoogleAdsPage({
             <StatCard label="Valor de conversão" value={current.conversionValueBrl} previousValue={previous.conversionValueBrl} icon={TrendingUp} formatter={formatBRL} />
             <StatCard label="ROAS" value={current.roas} previousValue={previous.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
           </div>
+
+          {funnel ? (
+            <div className="mt-6">
+              <FunnelChart data={funnel} />
+            </div>
+          ) : (
+            !scope.clientId && (
+              <Card className="mt-6 p-4 text-sm text-muted">
+                Selecione um cliente específico no topo da página para ver o funil de conversão — cada
+                cliente costuma ter etapas diferentes (ex: Leads → Agendamentos → Vendas), então não faz
+                sentido somar etapas de clientes diferentes na visão agregada.
+              </Card>
+            )
+          )}
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <TimeSeriesChart title="Investimento" data={series} metricKey="costBrl" format="brl" color="var(--color-google)" />

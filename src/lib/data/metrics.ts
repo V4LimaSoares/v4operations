@@ -211,8 +211,10 @@ export async function getCampaignPerformance(
 ) {
   const campaigns = await prisma.campaign.findMany({
     where: {
-      adAccount: scope.clientId ? { clientId: scope.clientId } : {},
-      ...(platform && platform !== "all" ? { adAccount: { platform } } : {}),
+      adAccount: {
+        clientId: scope.clientId ?? undefined,
+        ...(platform && platform !== "all" ? { platform } : {}),
+      },
     },
     include: {
       adAccount: { select: { platform: true, name: true, dataSource: true, client: { select: { name: true } } } },

@@ -6,6 +6,7 @@ import { PrismaClient, Prisma, type Platform } from "@prisma/client";
 import { hashPassword } from "../src/lib/auth";
 import { randomDailyMetric, splitAcrossChildren } from "../src/lib/demo/generator";
 import { generateSearchTermVariants, randomSearchTermStatus, randomSearchTermMetric } from "../src/lib/demo/search-terms";
+import { FUNNEL_STAGE_NAMES, generateFunnelCounts } from "../src/lib/demo/funnel";
 
 const prisma = new PrismaClient();
 
@@ -243,6 +244,28 @@ async function main() {
             }
             if (searchTermRows.length) await prisma.searchTerm.createMany({ data: searchTermRows });
           }
+        }
+      }
+
+      if (platform === "GOOGLE_ADS") {
+        const stageNames = FUNNEL_STAGE_NAMES[spec.segment];
+        if (stageNames) {
+          const accountClicks = await prisma.metric.aggregate({
+            where: { adAccountId: account.id, keywordId: null },
+            _sum: { clicks: true },
+          });
+          const counts = generateFunnelCounts(accountClicks._sum.clicks ?? 0, stageNames.length);
+          await prisma.funnelStage.createMany({
+            data: stageNames.map((name, i) => ({
+              adAccountId: account.id,
+              name,
+              order: i,
+              conversions: counts[i],
+              periodStart: dates[0],
+              periodEnd: dates[dates.length - 1],
+              dataSource: "DEMO",
+            })),
+          });
         }
       }
     }

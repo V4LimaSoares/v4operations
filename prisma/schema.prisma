@@ -129,10 +129,11 @@ model AdAccount {
   connectedAt DateTime   @default(now())
   lastSyncAt  DateTime?
 
-  campaigns   Campaign[]
-  metrics     Metric[]
-  syncLogs    SyncLog[]
-  searchTerms SearchTerm[]
+  campaigns    Campaign[]
+  metrics      Metric[]
+  syncLogs     SyncLog[]
+  searchTerms  SearchTerm[]
+  funnelStages FunnelStage[]
 
   @@unique([platform, externalId])
   @@index([clientId])
@@ -253,6 +254,26 @@ model SearchTerm {
 
   @@index([adAccountId])
   @@index([campaignId])
+}
+
+/// A named step in a client-specific conversion funnel (e.g. Lead -> Agendamento -> Venda),
+/// beyond the generic "conversions" total. Google Ads reports each of these as a separate
+/// conversion action; impressions/clicks/cost for the funnel come from the account's existing
+/// Metric rows, so only the per-stage conversion count is stored here. A period snapshot
+/// (like SearchTerm), refreshed wholesale on each sync — not a daily fact table.
+model FunnelStage {
+  id          String     @id @default(cuid())
+  adAccountId String
+  adAccount   AdAccount  @relation(fields: [adAccountId], references: [id], onDelete: Cascade)
+  name        String
+  order       Int
+  conversions Decimal    @default(0) @db.Decimal(14, 2)
+  periodStart DateTime   @db.Date
+  periodEnd   DateTime   @db.Date
+  dataSource  DataSource @default(DEMO)
+  fetchedAt   DateTime   @default(now())
+
+  @@index([adAccountId, order])
 }
 
 /// Single denormalized daily metrics fact table, scoped by whichever entity level it belongs to.

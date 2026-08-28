@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { randomDailyMetric, splitAcrossChildren } from "@/lib/demo/generator";
 import { generateSearchTermVariants, randomSearchTermStatus, randomSearchTermMetric } from "@/lib/demo/search-terms";
+import { generateFunnelCounts } from "@/lib/demo/funnel";
 import type { Prisma } from "@prisma/client";
 
 const schema = z.object({ adAccountId: z.string().min(1) });
@@ -102,6 +103,31 @@ export async function POST(req: Request) {
         }
       }
       if (rows.length) await prisma.searchTerm.createMany({ data: rows });
+    }
+
+    const existingStages = await prisma.funnelStage.findMany({
+      where: { adAccountId: account.id },
+      orderBy: { order: "asc" },
+      distinct: ["name"],
+    });
+    if (existingStages.length) {
+      const clicksAgg = await prisma.metric.aggregate({
+        where: { adAccountId: account.id, keywordId: null },
+        _sum: { clicks: true },
+      });
+      const counts = generateFunnelCounts(clicksAgg._sum.clicks ?? 0, existingStages.length);
+      await prisma.funnelStage.deleteMany({ where: { adAccountId: account.id } });
+      await prisma.funnelStage.createMany({
+        data: existingStages.map((s, i) => ({
+          adAccountId: account.id,
+          name: s.name,
+          order: i,
+          conversions: counts[i],
+          periodStart,
+          periodEnd,
+          dataSource: "DEMO",
+        })),
+      });
     }
   }
 
