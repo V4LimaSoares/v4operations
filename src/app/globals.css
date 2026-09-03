@@ -9,18 +9,26 @@
   --muted: #6b6d76;
   --muted-2: #8c8e97;
 
-  --primary: #5b5ff0;
+  /* V4 Company brand red — see Referências/V4-Company-Brand-Guidelines.md (never change this tone) */
+  --primary: #e50914;
   --primary-foreground: #ffffff;
-  --primary-soft: #eeeeff;
+  --primary-soft: #fde6e7;
 
   --positive: #16a34a;
   --positive-soft: #e9f8ef;
-  --negative: #dc2626;
+  --negative: #b20710;
   --negative-soft: #fdecec;
   --warning: #d97706;
   --warning-soft: #fdf3e3;
   --info: #2563eb;
   --info-soft: #eaf1fe;
+
+  /* Secondary chart accents — brand yellow + a complementary orange, used across chart
+     visualizations so no two charts on the same screen share a color. */
+  --chart-orange: #ff7a1a;
+  --chart-orange-soft: #fef0e4;
+  --chart-yellow: #ffc02a;
+  --chart-yellow-soft: #fef8e6;
 
   --google: #4285f4;
   --meta: #0866ff;
@@ -40,9 +48,9 @@
     --muted: #9a9ba5;
     --muted-2: #6f707a;
 
-    --primary: #7477f6;
-    --primary-foreground: #0a0a0d;
-    --primary-soft: #201f3d;
+    --primary: #e50914;
+    --primary-foreground: #ffffff;
+    --primary-soft: #2a0f10;
 
     --positive: #34d399;
     --positive-soft: #10261f;
@@ -52,6 +60,11 @@
     --warning-soft: #2b230f;
     --info: #60a5fa;
     --info-soft: #142238;
+
+    --chart-orange: #ff8a3d;
+    --chart-orange-soft: #2b1a0d;
+    --chart-yellow: #ffc02a;
+    --chart-yellow-soft: #2b2410;
 
     --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
   }
@@ -66,9 +79,9 @@
   --muted: #9a9ba5;
   --muted-2: #6f707a;
 
-  --primary: #7477f6;
-  --primary-foreground: #0a0a0d;
-  --primary-soft: #201f3d;
+  --primary: #e50914;
+  --primary-foreground: #ffffff;
+  --primary-soft: #2a0f10;
 
   --positive: #34d399;
   --positive-soft: #10261f;
@@ -78,6 +91,11 @@
   --warning-soft: #2b230f;
   --info: #60a5fa;
   --info-soft: #142238;
+
+  --chart-orange: #ff8a3d;
+  --chart-orange-soft: #2b1a0d;
+  --chart-yellow: #ffc02a;
+  --chart-yellow-soft: #2b2410;
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
 }
@@ -103,6 +121,11 @@
   --color-warning-soft: var(--warning-soft);
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
+
+  --color-chart-orange: var(--chart-orange);
+  --color-chart-orange-soft: var(--chart-orange-soft);
+  --color-chart-yellow: var(--chart-yellow);
+  --color-chart-yellow-soft: var(--chart-yellow-soft);
 
   --color-google: var(--google);
   --color-meta: var(--meta);

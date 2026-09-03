@@ -3,7 +3,8 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { BarChart3, Loader2 } from "lucide-react";
+import Image from "next/image";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -45,11 +46,9 @@ function LoginForm() {
   return (
     <Card className="w-full max-w-sm p-8">
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
-        <div className="flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <BarChart3 className="size-5.5" />
-        </div>
+        <Image src="/brand/v4-logo.png" alt="V4" width={44} height={44} priority />
         <div>
-          <h1 className="text-lg font-semibold">Portal de Tráfego Pago</h1>
+          <h1 className="text-lg font-semibold">V4 Lima Soares - Performance</h1>
           <p className="text-sm text-muted">Entre com suas credenciais para continuar</p>
         </div>
       </div>

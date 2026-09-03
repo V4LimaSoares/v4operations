@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CLIENT_NAV, ADMIN_NAV } from "@/lib/nav";
 
@@ -13,9 +13,7 @@ export function Sidebar({ role, appName }: { role: "ADMIN" | "CLIENT"; appName: 
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-surface lg:flex">
       <div className="flex h-16 items-center gap-2 border-b border-border px-6">
-        <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <BarChart3 className="size-4.5" />
-        </div>
+        <Image src="/brand/v4-logo.png" alt="V4" width={32} height={32} className="shrink-0" priority />
         <span className="text-sm font-semibold tracking-tight">{appName}</span>
       </div>
 
@@ -42,7 +40,7 @@ export function Sidebar({ role, appName }: { role: "ADMIN" | "CLIENT"; appName: 
       </nav>
 
       <div className="border-t border-border p-4 text-xs text-muted-2">
-        Portal de Tráfego Pago
+        V4 Lima Soares - Performance
       </div>
     </aside>
   );

@@ -35,8 +35,8 @@ export default async function DashboardPage({
 
   const topCampaigns = campaigns.slice(0, 5);
   const investmentByPlatform = [
-    { name: "Google Ads", value: googleSummary.costBrl, color: "var(--color-google)" },
-    { name: "Meta Ads", value: metaSummary.costBrl, color: "var(--color-meta)" },
+    { name: "Google Ads", value: googleSummary.costBrl, color: "var(--color-primary)" },
+    { name: "Meta Ads", value: metaSummary.costBrl, color: "var(--color-chart-orange)" },
   ];
 
   return (
@@ -64,8 +64,8 @@ export default async function DashboardPage({
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <TimeSeriesChart title="Investimento ao longo do tempo" data={series} metricKey="costBrl" format="brl" variant="area" color="var(--color-primary)" />
-        <TimeSeriesChart title="Faturamento (valor de conversão) ao longo do tempo" data={series} metricKey="conversionValueBrl" format="brl" variant="line" color="var(--color-positive)" />
-        <TimeSeriesChart title="Conversões ao longo do tempo" data={series} metricKey="conversions" format="decimal1" variant="bar" color="var(--color-info)" />
+        <TimeSeriesChart title="Faturamento (valor de conversão) ao longo do tempo" data={series} metricKey="conversionValueBrl" format="brl" variant="line" color="var(--color-chart-yellow)" />
+        <TimeSeriesChart title="Conversões ao longo do tempo" data={series} metricKey="conversions" format="decimal1" variant="bar" color="var(--color-chart-orange)" />
         <DonutChart title="Investimento por plataforma" data={investmentByPlatform} format="brl" />
       </div>
 

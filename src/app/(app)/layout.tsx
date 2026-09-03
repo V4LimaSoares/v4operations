@@ -3,7 +3,7 @@ import { listClientOptions } from "@/lib/scope";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 
-const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "Portal de Tráfego Pago";
+const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "V4 Lima Soares - Performance";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();

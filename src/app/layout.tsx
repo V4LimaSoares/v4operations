@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Portal de Tráfego Pago",
+  title: "V4 Lima Soares - Performance",
   description: "Painel de performance de campanhas Google Ads e Meta Ads",
 };
 
