@@ -7,6 +7,7 @@ import { hashPassword } from "../src/lib/auth";
 import { randomDailyMetric, splitAcrossChildren } from "../src/lib/demo/generator";
 import { generateSearchTermVariants, randomSearchTermStatus, randomSearchTermMetric } from "../src/lib/demo/search-terms";
 import { FUNNEL_STAGE_NAMES, generateFunnelCounts } from "../src/lib/demo/funnel";
+import { generateDemoCreative } from "../src/lib/demo/creative-image";
 
 const prisma = new PrismaClient();
 
@@ -50,9 +51,6 @@ function externalId(prefix: string) {
   return `${prefix}${Math.floor(1000000000 + Math.random() * 8999999999)}`;
 }
 
-function placeholderImage(seed: string) {
-  return `https://picsum.photos/seed/${encodeURIComponent(seed)}/600/450`;
-}
 
 function datesBack(n: number) {
   const dates: Date[] = [];
@@ -146,7 +144,10 @@ async function main() {
                   status: "ENABLED",
                   headline: `${spec.company} | ${groupTheme}`,
                   description: `Confira as ofertas de ${spec.company.toLowerCase()}.`,
-                  imageUrl: platform === "META_ADS" ? placeholderImage(`${client.id}-${adGroup.id}-${n}`) : null,
+                  imageUrl:
+                    platform === "META_ADS"
+                      ? generateDemoCreative(spec.company, `${client.id}-${adGroup.id}-${n}`)
+                      : null,
                   creativeType: platform === "GOOGLE_ADS" ? "RESPONSIVE_SEARCH_AD" : "IMAGE",
                   dataSource: "DEMO",
                 },
