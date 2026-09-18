@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { MoreHorizontal, Trash2, PauseCircle, PlayCircle } from "lucide-react";
+import { MoreHorizontal, Trash2, PauseCircle, PlayCircle, Pencil } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,12 +12,14 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { EditClientDialog, type EditableClient } from "@/components/admin/edit-client-dialog";
 import type { ClientStatus } from "@prisma/client";
 
-export function ClientRowActions({ id, status }: { id: string; status: ClientStatus }) {
+export function ClientRowActions({ id, status, client }: { id: string; status: ClientStatus; client: EditableClient }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   function toggleStatus() {
     startTransition(async () => {
@@ -64,22 +66,28 @@ export function ClientRowActions({ id, status }: { id: string; status: ClientSta
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" disabled={pending}>
-          <MoreHorizontal className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={toggleStatus}>
-          {status === "ACTIVE" ? <PauseCircle className="size-4" /> : <PlayCircle className="size-4" />}
-          {status === "ACTIVE" ? "Desativar" : "Reativar"}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => setConfirming(true)} className="text-negative">
-          <Trash2 className="size-4" /> Excluir
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" disabled={pending}>
+            <MoreHorizontal className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => setEditing(true)}>
+            <Pencil className="size-4" /> Editar
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={toggleStatus}>
+            {status === "ACTIVE" ? <PauseCircle className="size-4" /> : <PlayCircle className="size-4" />}
+            {status === "ACTIVE" ? "Desativar" : "Reativar"}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={() => setConfirming(true)} className="text-negative">
+            <Trash2 className="size-4" /> Excluir
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <EditClientDialog client={client} trigger={null} open={editing} onOpenChange={setEditing} />
+    </>
   );
 }

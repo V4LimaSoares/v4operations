@@ -27,7 +27,7 @@ export async function buildReportPptx(data: ReportData): Promise<Buffer> {
   const pres = new PptxGenJS();
   pres.defineLayout({ name: "WIDE", width: 13.33, height: 7.5 });
   pres.layout = "WIDE";
-  pres.author = "V4 Lima Soares - Performance";
+  pres.author = "V4 Company - Operations";
   pres.title = `Relatório de Performance — ${data.client.company}`;
 
   // Slide 1 — Capa
@@ -42,7 +42,7 @@ export async function buildReportPptx(data: ReportData): Promise<Buffer> {
   cover.addText(`Período: ${fmtDate(data.range.start)} a ${fmtDate(data.range.end)}`, {
     x: 3.9, y: 4.9, w: 8.8, h: 0.4, fontSize: 13, color: "CCCCCC",
   });
-  cover.addText("V4 Lima Soares - Performance", { x: 3.9, y: 6.8, w: 8, h: 0.4, fontSize: 10, color: "888888" });
+  cover.addText("V4 Company - Operations", { x: 3.9, y: 6.8, w: 8, h: 0.4, fontSize: 10, color: "888888" });
 
   // Slide 2 — KPIs
   const kpiSlide = pres.addSlide();

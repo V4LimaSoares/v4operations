@@ -36,12 +36,16 @@ export async function POST(req: Request) {
   const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? new URL(req.url).origin}/redefinir-senha?token=${token}`;
 
   // No transactional email provider is configured yet (see RESEND_API_KEY in .env.example).
-  // Until one is wired up, the link is only logged server-side and — for local/testing
-  // convenience — echoed back in the response so the flow is fully testable end-to-end.
+  // Until one is wired up, the link is only logged server-side — NEVER echoed back in the
+  // response outside local development. Doing so in production (which this app had been
+  // running as, unconfigured, with RESEND_API_KEY unset) handed any unauthenticated caller a
+  // live password-reset token for any account they named, including the admin's — full account
+  // takeover with nothing but the target's email address. `NODE_ENV` is the gate, not the
+  // presence of RESEND_API_KEY, so a misconfigured prod deploy can't reopen this.
   console.info(`[reset-password] Link de redefinição para ${user.email}: ${resetUrl}`);
 
   return NextResponse.json({
     ...genericResponse,
-    devResetUrl: process.env.RESEND_API_KEY ? undefined : resetUrl,
+    devResetUrl: process.env.NODE_ENV === "production" ? undefined : resetUrl,
   });
 }

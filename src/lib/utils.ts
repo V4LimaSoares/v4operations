@@ -24,6 +24,11 @@ export function formatDate(date: Date | string) {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+export function formatDateTime(date: Date | string) {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return `${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })} às ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
 /** % change from previous to current. Returns null when previous is 0 (undefined/infinite change). */
 export function pctChange(current: number, previous: number): number | null {
   if (previous === 0) return current === 0 ? 0 : null;

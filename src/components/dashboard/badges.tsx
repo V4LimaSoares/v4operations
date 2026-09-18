@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import type { Platform, EntityStatus, DataSource, SearchTermStatus } from "@prisma/client";
+import type { Platform, EntityStatus, DataSource, SearchTermStatus, ClientStatus } from "@prisma/client";
 
 export function PlatformBadge({ platform }: { platform: Platform }) {
   return (
@@ -28,6 +28,16 @@ export function SearchTermStatusBadge({ status }: { status: SearchTermStatus }) 
     ADDED: { label: "Já é palavra-chave", variant: "positive" },
     EXCLUDED: { label: "Negativada", variant: "negative" },
     NONE: { label: "Sem ação", variant: "outline" },
+  };
+  const cfg = map[status];
+  return <Badge variant={cfg.variant}>{cfg.label}</Badge>;
+}
+
+export function ClientStatusBadge({ status }: { status: ClientStatus }) {
+  const map: Record<ClientStatus, { label: string; variant: "positive" | "warning" | "default" }> = {
+    ACTIVE: { label: "Ativo", variant: "positive" },
+    PAUSED: { label: "Pausado", variant: "warning" },
+    INACTIVE: { label: "Inativo", variant: "default" },
   };
   const cfg = map[status];
   return <Badge variant={cfg.variant}>{cfg.label}</Badge>;

@@ -1,10 +1,47 @@
+"use client";
+
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * "There's more, scroll →" hint for tables wider than their container. Only shown when the
+ * table actually overflows and there's still distance left to scroll — a table that already
+ * fits, or one that's been scrolled to its end, shows no overlay. Real content is never
+ * faded/clipped; this is a decorative pointer-events-none edge gradient layered on top.
+ */
 export function Table({ className, ...props }: React.TableHTMLAttributes<HTMLTableElement>) {
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollRight, setCanScrollRight] = React.useState(false);
+
+  const updateFade = React.useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollRight(el.scrollWidth - el.clientWidth - el.scrollLeft > 4);
+  }, []);
+
+  React.useEffect(() => {
+    updateFade();
+    const el = scrollRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(updateFade);
+    ro.observe(el);
+    el.addEventListener("scroll", updateFade, { passive: true });
+    window.addEventListener("resize", updateFade);
+    return () => {
+      ro.disconnect();
+      el.removeEventListener("scroll", updateFade);
+      window.removeEventListener("resize", updateFade);
+    };
+  }, [updateFade]);
+
   return (
-    <div className="w-full overflow-x-auto scrollbar-thin">
-      <table className={cn("w-full caption-bottom text-sm", className)} {...props} />
+    <div className="relative">
+      <div ref={scrollRef} className="w-full overflow-x-auto scrollbar-thin">
+        <table className={cn("w-full caption-bottom text-sm", className)} {...props} />
+      </div>
+      {canScrollRight && (
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-surface to-transparent" />
+      )}
     </div>
   );
 }

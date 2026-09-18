@@ -1,5 +1,5 @@
 import { Wallet, Receipt, TrendingUp, Ticket } from "lucide-react";
-import { requireUser } from "@/lib/session";
+import { requireModule } from "@/lib/session";
 import { resolveScope } from "@/lib/scope";
 import { presetToRange, getSummaryWithComparison } from "@/lib/data/metrics";
 import { listRevenueEntries, getRevenueSeries } from "@/lib/data/revenue";
@@ -17,7 +17,7 @@ export default async function FaturamentoPage({
 }: {
   searchParams: Promise<{ period?: string; clientId?: string }>;
 }) {
-  const user = await requireUser();
+  const user = await requireModule("faturamento");
   const params = await searchParams;
   const scope = resolveScope(user, params.clientId);
   const range = presetToRange(params.period ?? "30d");

@@ -11,6 +11,7 @@ datasource db {
 
 enum Role {
   ADMIN
+  STAFF
   CLIENT
 }
 
@@ -55,6 +56,16 @@ enum SyncStatus {
   ERROR
 }
 
+enum ExpenseKind {
+  BILL
+  PROLABORE
+}
+
+enum ExpenseStatus {
+  PENDING
+  PAID
+}
+
 enum RevenueSource {
   MANUAL
   INTEGRATION
@@ -76,10 +87,50 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  // Brute-force lockout: failedLoginAttempts resets to 0 on any successful login; hitting the
+  // threshold (see LOGIN_LOCKOUT_THRESHOLD in the login route) sets lockedUntil and resets the
+  // counter, so the count itself never needs to be read for anything but that one comparison.
+  failedLoginAttempts Int      @default(0)
+  lockedUntil         DateTime?
+
+  // STAFF-role access control. `modulePermissions` is the single source of truth checked on
+  // every request (server-side, never trusted from the client) — `permissionProfileId` is kept
+  // only so the admin UI can show/re-apply "this user started from the Gestor profile"; editing
+  // a user's own checkboxes always overrides it. Meaningless for ADMIN (always full access) and
+  // CLIENT (scoped by clientId instead, a different axis entirely).
+  permissionProfileId String?
+  permissionProfile   PermissionProfile? @relation(fields: [permissionProfileId], references: [id], onDelete: SetNull)
+  modulePermissions    String[] @default([])
+
   resetTokens  PasswordResetToken[]
   syncLogsTriggered SyncLog[]
+  accountNotesAuthored AccountNote[]
+  activityLogs ActivityLog[]
+  materials    Material[]
+
+  // The Equipes/Squad "roster profile" this account owns, if any — set the first time an admin
+  // links this user to a team from Equipes. Optional and 1:1: most Users (CLIENT-role, or a
+  // STAFF user never added to a team) have none.
+  teamMemberProfile TeamMember?
 
   @@index([clientId])
+  @@index([permissionProfileId])
+}
+
+// Reusable permission templates ("perfis/cargos") the admin can define and assign to STAFF
+// users — e.g. Gestor, Operador, Visualizador. Applying a profile just pre-fills a user's
+// `modulePermissions`; it is not a live link, so editing the profile later does not silently
+// change already-created users (avoids surprise privilege changes).
+model PermissionProfile {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  modules     String[] @default([])
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
 }
 
 model PasswordResetToken {
@@ -105,12 +156,134 @@ model Client {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
+  // The exact label this client is known by in each external system, so the SLA live-JSON
+  // fetchers and the Ekyte snapshot can be matched back to this record — those two systems have
+  // no id of their own to join on, only a client name that isn't always spelled the same way
+  // here. Nullable + manually editable for whatever the automatic name-matching backfill misses.
+  slaGroupName    String?
+  ekyteClientName String?
+
   users        User[]
   adAccounts   AdAccount[]
   revenueEntries RevenueEntry[]
   insights     Insight[]
+  healthScoreEntries HealthScoreEntry[]
+  teamMembers  ClientTeamMember[]
+  accountNotes AccountNote[]
+  squads       SquadClient[]
 
   @@index([status])
+}
+
+// Relationship history for the Account tab — reuniões, decisões, riscos e observações que hoje
+// não tinham lugar nenhum no sistema (viviam em ferramentas externas ou em lugar nenhum).
+// Deliberately minimal: free-text type instead of an enum (same convention as TeamMember.role and
+// HealthScoreEntry.phase), so a new kind of entry never needs a migration.
+model AccountNote {
+  id         String   @id @default(cuid())
+  clientId   String
+  client     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  authorId   String?
+  author     User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  type       String   // "Reunião" | "Decisão" | "Risco" | "Observação"
+  body       String   @db.Text
+  occurredAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@index([clientId, occurredAt])
+}
+
+// ---------- Unified team roster ----------
+// One record per agency teammate, shared across Controle de SLA and Ekyte (which used to each
+// keep their own hardcoded roster) and linkable to any number of Clients below.
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  // CSS custom property name (e.g. "var(--c-monica)") already defined in globals.css — kept as a
+  // string reference rather than a hex value so existing charts/avatars across SLA and Ekyte that
+  // already read these variables don't need to change.
+  colorVar  String
+  // Uploaded profile photo — relative path inside the uploads bind mount (see
+  // src/lib/avatar-storage.ts), served via GET /api/team/[id]/avatar. Null falls back to the
+  // colorVar + initial letter avatar.
+  photoUrl  String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Links this roster profile to a real Administração login, if any — optional (Equipes can
+  // create a person on its own; linking to a User account is a choice, not a requirement).
+  // SetNull (not Cascade) so deleting the Administração account doesn't wipe this person's
+  // client/squad history, just detaches it.
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  clients ClientTeamMember[]
+  squads  SquadMember[]
+  recurringExpenses RecurringExpense[]
+}
+
+model ClientTeamMember {
+  clientId     String
+  client       Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  teamMemberId String
+  teamMember   TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  // The role this person plays for THIS client specifically — distinct from TeamMember.role
+  // (their job title at the agency in general). The same person can be the Account on one client
+  // and pontual support on another; free text, same convention as TeamMember.role, so new roles
+  // don't need a migration.
+  role         String?
+  // Marks the one responsible person for this role on this client (e.g. "the" Account, when more
+  // than one person carries an Account-shaped role here). Not unique/enforced at the DB level —
+  // a client legitimately having zero or more than one primary isn't an error, just unusual.
+  isPrimary    Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+
+  @@id([clientId, teamMemberId])
+  @@index([teamMemberId])
+}
+
+// ---------- Squad (group of people + a client portfolio they manage) ----------
+
+model Squad {
+  id        String   @id @default(cuid())
+  name      String
+  // Path/URL to a brand mark shown on the squad's card instead of the default colored-initial
+  // avatar — optional, most squads won't have one.
+  logoUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members SquadMember[]
+  clients SquadClient[]
+}
+
+model SquadMember {
+  squadId      String
+  squad        Squad      @relation(fields: [squadId], references: [id], onDelete: Cascade)
+  teamMemberId String
+  teamMember   TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  // The role this person plays IN THIS SQUAD — distinct from TeamMember.role (their agency-wide
+  // title) and from ClientTeamMember.role (their role on one specific client). Same free-text
+  // convention as those.
+  role         String?
+  createdAt    DateTime   @default(now())
+
+  @@id([squadId, teamMemberId])
+  @@index([teamMemberId])
+}
+
+model SquadClient {
+  squadId   String
+  squad     Squad    @relation(fields: [squadId], references: [id], onDelete: Cascade)
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([squadId, clientId])
+  @@index([clientId])
 }
 
 // ---------- Ad platform hierarchy ----------
@@ -346,6 +519,80 @@ model Insight {
   @@index([clientId, generatedAt])
 }
 
+// ---------- Health Score (account health tracker, mirrors the agency's internal spreadsheet) ----------
+
+model HealthScoreEntry {
+  id          String  @id @default(cuid())
+  clientName  String
+  // Optional link to the tenant Client record so the global client filter (topbar) can scope
+  // Health Score data too. Nullable because entries are imported from a spreadsheet roster that's
+  // broader than the set of clients onboarded to ad-platform tracking — not every entry has a match.
+  clientId    String?
+  client      Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  phase       String  @default("ONGOING") // ONGOING | Churn — free text so new phases don't need a migration
+  productCategory String?
+  product     String?
+  feeBrl      Float?
+
+  projectStart    DateTime?
+  leadTimeMonths  Int?
+  replanDate      DateTime?
+  lastUpdate      DateTime?
+
+  contributionMarginPct Float?
+  roi                   Float?
+
+  revenueGoalBrl     Float?
+  revenueAchievedBrl Float?
+  investmentGoalBrl     Float?
+  investmentAchievedBrl Float?
+
+  planningLink String?
+  kpiGoal      String?
+  kpiPartial   String?
+  kpiAchieved  Boolean?
+
+  stakeholderRelationship String? // Saudável | Risco
+  flag                    String? // Saudável | Risco | Risco Iminente
+  hsUpToDate              String? // Em dia | Atrasado
+
+  // Not in the original spreadsheet — added so the team has an owner and a next-touchpoint date
+  // to act on, instead of health data that's only ever looked at retrospectively.
+  accountOwner String?
+  nextCheckin  DateTime?
+
+  // "Informações do cliente" additions — end of contract and a link to where the signed contract
+  // lives, alongside the existing projectStart/feeBrl.
+  endDate      DateTime?
+  contractLink String?
+
+  // "Operação" — cadence of account reviews, the recurring paid-media budget (distinct from the
+  // revenue/investment goal-vs-achieved pair above, which tracks a reporting period, not a budget),
+  // and a link to the client's operating folder.
+  analysisFrequency      String?
+  paidMediaInvestmentBrl Float?
+  driveLink              String?
+
+  // Yes/No account-health checklist (ROI acima de 1?, CSAT >= 4?, CRM em uso correto?, etc).
+  // Kept as free-form JSON — {label: "Sim"|"Não"|"Não Contratado"} — so new checklist items can
+  // be added from the UI later without a schema migration.
+  checklist Json?
+
+  growth              String?
+  churnProbabilityPct Float?
+
+  fact        String? @db.Text
+  cause       String? @db.Text
+  action      String? @db.Text
+  notes       String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientName])
+  @@index([clientId])
+}
+
 // ---------- Sync tracking ----------
 
 model SyncLog {
@@ -364,4 +611,134 @@ model SyncLog {
   dataSource    DataSource @default(DEMO)
 
   @@index([adAccountId, startedAt])
+}
+
+// ---------- Activity log (who changed what, when) ----------
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  actorId     String?
+  actor       User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorName   String // snapshot of the name at the time — survives the actor being deleted later
+  action      String // "criou" | "editou" | "excluiu" | "vinculou" | "desvinculou"
+  entityType  String // "Cliente", "Squad", "Membro da equipe", "Usuário", ...
+  entityId    String
+  entityLabel String // human-readable name of the entity at the time of the action
+  detail      String?
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// ---------- Ekyte live snapshot (replaces the bundled static JSON) ----------
+
+model EkyteSnapshot {
+  id          String   @id @default(cuid())
+  generatedAt DateTime @default(now())
+  tasksJson   Json
+  timeJson    Json
+}
+
+// Singleton row — the Ekyte API token, editable at runtime from the app itself (instead of a
+// Docker service env var that needs a redeploy to change) plus the last known health status, so
+// the admin banner can warn as soon as a refresh finds the token revoked.
+model EkyteIntegration {
+  id            String   @id @default(cuid())
+  apiKey        String
+  status        String   @default("OK") // "OK" | "ERROR"
+  errorMessage  String?
+  updatedAt     DateTime @updatedAt
+  updatedByName String?
+}
+
+// ---------- Materiais Operacionais (apresentações, playbooks, documentos) ----------
+
+// ---------- Financeiro (Contas a Pagar, Royalties, Fixo/Pró-labore) ----------
+
+model RecurringExpense {
+  id           String       @id @default(cuid())
+  kind         ExpenseKind
+  name         String
+  category     String?
+  amountBrl    Float
+  dayOfMonth   Int
+  active       Boolean      @default(true)
+  teamMemberId String?
+  teamMember   TeamMember?  @relation(fields: [teamMemberId], references: [id], onDelete: SetNull)
+  instances    ExpenseInstance[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Only meaningful for kind = PROLABORE — mirrors the "Colaboradores Ativos" table (função,
+  // porcentagem de comissão, monetização/indicação, contratação/desligamento, sócio).
+  percentage          Float?
+  referralPercentage  Float?
+  hireDate            DateTime?
+  terminationDate     DateTime?
+  isPartner           Boolean   @default(false)
+
+  @@index([kind])
+}
+
+model ExpenseInstance {
+  id                 String            @id @default(cuid())
+  recurringExpenseId String?
+  recurringExpense   RecurringExpense? @relation(fields: [recurringExpenseId], references: [id], onDelete: SetNull)
+  kind               ExpenseKind
+  description        String
+  category           String?
+  amountBrl          Float
+  dueDate            DateTime
+  month              Int
+  year               Int
+  status             ExpenseStatus     @default(PENDING)
+  paidAt             DateTime?
+  createdAt          DateTime          @default(now())
+
+  @@unique([recurringExpenseId, month, year])
+  @@index([kind, year, month])
+}
+
+model TaxPayment {
+  id        String    @id @default(cuid())
+  name      String
+  amountBrl Float
+  month     Int
+  year      Int
+  paidAt    DateTime?
+  notes     String?
+  createdAt DateTime  @default(now())
+
+  @@index([year, month])
+}
+
+model RoyaltyConfig {
+  id          String   @id @default(cuid())
+  name        String
+  percentage  Float
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Material {
+  id             String   @id @default(cuid())
+  title          String
+  description    String?
+  category       String
+  // Exactly one of (fileName/filePath/fileSizeBytes/mimeType) or linkUrl is set — a material is
+  // either an uploaded file or an external link (e.g. Google Drive/Docs), never both.
+  fileName       String?
+  filePath       String?
+  fileSizeBytes  Int?
+  mimeType       String?
+  linkUrl        String?
+  uploadedById   String?
+  uploadedBy     User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  uploadedByName String
+  createdAt      DateTime @default(now())
+
+  @@index([category])
 }

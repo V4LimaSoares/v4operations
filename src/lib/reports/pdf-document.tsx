@@ -203,7 +203,7 @@ export function PerformanceReportDocument({ data }: { data: ReportData }) {
 
         <View style={styles.footer} fixed>
           <Text style={styles.footerText}>
-            Fonte: V4 Lima Soares - Performance {data.dataSource === "DEMO" ? "(dados demonstrativos)" : ""}
+            Fonte: V4 Company - Operations {data.dataSource === "DEMO" ? "(dados demonstrativos)" : ""}
           </Text>
           <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
         </View>

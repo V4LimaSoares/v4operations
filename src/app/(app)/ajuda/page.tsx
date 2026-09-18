@@ -1,4 +1,4 @@
-import { requireUser } from "@/lib/session";
+import { requireModule } from "@/lib/session";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
@@ -66,7 +66,7 @@ const METRICS: Metric[] = [
 ];
 
 export default async function AjudaPage() {
-  await requireUser();
+  await requireModule("ajuda");
 
   return (
     <div>

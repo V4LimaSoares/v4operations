@@ -1,4 +1,4 @@
-import { requireUser } from "@/lib/session";
+import { requireModule } from "@/lib/session";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ChangePasswordForm } from "@/components/dashboard/change-password-form";
@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 
 export default async function ConfiguracoesPage() {
-  const user = await requireUser();
+  const user = await requireModule("configuracoes");
 
   return (
     <div>
@@ -23,7 +23,11 @@ export default async function ConfiguracoesPage() {
             <Row label="E-mail" value={user.email} />
             <Row
               label="Perfil"
-              value={<Badge variant={user.role === "ADMIN" ? "primary" : "outline"}>{user.role === "ADMIN" ? "Administrador" : "Cliente"}</Badge>}
+              value={
+                <Badge variant={user.role === "ADMIN" ? "primary" : user.role === "STAFF" ? "info" : "outline"}>
+                  {user.role === "ADMIN" ? "Administrador" : user.role === "STAFF" ? "Equipe" : "Cliente"}
+                </Badge>
+              }
             />
             {user.client && <Row label="Empresa" value={user.client.company} />}
             <Row label="Conta criada em" value={formatDate(user.createdAt)} />

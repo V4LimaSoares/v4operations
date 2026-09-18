@@ -1,4 +1,4 @@
-import { requireUser } from "@/lib/session";
+import { requireModule } from "@/lib/session";
 import { resolveScope } from "@/lib/scope";
 import { presetToRange, getCampaignPerformance } from "@/lib/data/metrics";
 import { PageHeader } from "@/components/layout/page-header";
@@ -14,7 +14,7 @@ export default async function CampanhasPage({
 }: {
   searchParams: Promise<{ period?: string; platform?: string; clientId?: string }>;
 }) {
-  const user = await requireUser();
+  const user = await requireModule("campanhas");
   const params = await searchParams;
   const scope = resolveScope(user, params.clientId);
   const range = presetToRange(params.period ?? "30d");

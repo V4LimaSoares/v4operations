@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireAdmin } from "@/lib/session";
+import { requireStaffModule } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import { logActivity } from "@/lib/audit";
 
 const schema = z.object({
   clientId: z.string().min(1),
@@ -13,7 +14,7 @@ const schema = z.object({
 });
 
 export async function POST(req: Request) {
-  await requireAdmin();
+  const actor = await requireStaffModule("contas");
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
@@ -28,5 +29,15 @@ export async function POST(req: Request) {
   }
 
   const account = await prisma.adAccount.create({ data: parsed.data });
+
+  await logActivity({
+    actorId: actor.id,
+    actorName: actor.name,
+    action: "criou",
+    entityType: "Conta de anúncio",
+    entityId: account.id,
+    entityLabel: account.name,
+  });
+
   return NextResponse.json({ ok: true, account });
 }

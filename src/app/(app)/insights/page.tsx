@@ -1,4 +1,4 @@
-import { requireUser } from "@/lib/session";
+import { requireModule } from "@/lib/session";
 import { resolveScope } from "@/lib/scope";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/layout/page-header";
@@ -22,7 +22,7 @@ export default async function InsightsPage({
 }: {
   searchParams: Promise<{ clientId?: string }>;
 }) {
-  const user = await requireUser();
+  const user = await requireModule("insights");
   const params = await searchParams;
   const scope = resolveScope(user, params.clientId);
 

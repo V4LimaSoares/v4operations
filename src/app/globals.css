@@ -10,7 +10,7 @@
   --muted-2: #8c8e97;
 
   /* V4 Company brand red — see Referências/V4-Company-Brand-Guidelines.md (never change this tone) */
-  --primary: #e50914;
+  --primary: #e50815;
   --primary-foreground: #ffffff;
   --primary-soft: #fde6e7;
 
@@ -33,6 +33,21 @@
   --google: #4285f4;
   --meta: #0866ff;
 
+  /* Per-teammate accent colors for Controle de SLA's Equipes charts/avatars — one distinct hue
+     per person so nothing on the same screen is ambiguous about whose data it is. */
+  --c-monica: #b20710;
+  --c-camila: #2563eb;
+  --c-pedro: #b8460c;
+  --c-rafael: #0a7a54;
+
+  /* Ekyte team accents — Mônica and Pedro reuse the Controle de SLA colors above (same people),
+     these four are Ekyte-only names. */
+  --c-mateus: #7c3aed;
+  --c-everton: #ca8a04;
+  --c-lucas: #0891b2;
+  --c-flavia: #db2777;
+  --c-anderson: #4f46e5;
+
   --shadow-card: 0 1px 2px rgba(16, 17, 20, 0.04), 0 1px 1px rgba(16, 17, 20, 0.03);
   --radius-card: 1rem;
 }
@@ -48,7 +63,7 @@
     --muted: #9a9ba5;
     --muted-2: #6f707a;
 
-    --primary: #e50914;
+    --primary: #e50815;
     --primary-foreground: #ffffff;
     --primary-soft: #2a0f10;
 
@@ -66,6 +81,17 @@
     --chart-yellow: #ffc02a;
     --chart-yellow-soft: #2b2410;
 
+    --c-monica: #e50914;
+    --c-camila: #3b82f6;
+    --c-pedro: #c85a17;
+    --c-rafael: #0d9c6e;
+
+    --c-mateus: #a78bfa;
+    --c-everton: #eab308;
+    --c-lucas: #22d3ee;
+    --c-flavia: #f472b6;
+    --c-anderson: #818cf8;
+
     --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
   }
 }
@@ -79,7 +105,7 @@
   --muted: #9a9ba5;
   --muted-2: #6f707a;
 
-  --primary: #e50914;
+  --primary: #e50815;
   --primary-foreground: #ffffff;
   --primary-soft: #2a0f10;
 
@@ -96,6 +122,17 @@
   --chart-orange-soft: #2b1a0d;
   --chart-yellow: #ffc02a;
   --chart-yellow-soft: #2b2410;
+
+  --c-monica: #e50914;
+  --c-camila: #3b82f6;
+  --c-pedro: #c85a17;
+  --c-rafael: #0d9c6e;
+
+  --c-mateus: #a78bfa;
+  --c-everton: #eab308;
+  --c-lucas: #22d3ee;
+  --c-flavia: #f472b6;
+  --c-anderson: #818cf8;
 
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
 }
@@ -143,6 +180,21 @@ body {
   color: var(--foreground);
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Faint, fixed color glows behind the whole app — subtle enough not to compete with dense
+   tables/dashboards, but enough that the glass panels (Card/Dialog/Sidebar/Topbar) have something
+   to actually blur, instead of just tinting a flat color. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(38rem 22rem at 6% -8%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 65%),
+    radial-gradient(30rem 20rem at 100% 12%, color-mix(in srgb, var(--info) 8%, transparent), transparent 65%),
+    radial-gradient(34rem 24rem at 20% 110%, color-mix(in srgb, var(--primary) 6%, transparent), transparent 70%);
 }
 
 ::selection {

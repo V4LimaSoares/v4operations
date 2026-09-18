@@ -16,14 +16,21 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-export function NewClientDialog() {
+type TeamOption = { id: string; name: string; colorVar: string };
+
+export function NewClientDialog({ team = [] }: { team?: TeamOption[] }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
+  const [responsibleIds, setResponsibleIds] = useState<string[]>([]);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
+
+  function toggleResponsible(id: string) {
+    setResponsibleIds((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,6 +45,20 @@ export function NewClientDialog() {
       if (!res.ok) {
         toast.error(data.error ?? "Não foi possível criar o cliente.");
         return;
+      }
+      // Cliente + responsáveis num só passo: já vincula a equipe selecionada assim que o
+      // cliente existe, sem depender de um segundo passo na aba Equipe do detalhe.
+      if (responsibleIds.length > 0) {
+        const clientId = data.client.id as string;
+        await Promise.all(
+          responsibleIds.map((teamMemberId) =>
+            fetch(`/api/admin/clients/${clientId}/team`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ teamMemberId }),
+            })
+          )
+        );
       }
       if (data.generatedPassword) {
         setGeneratedPassword(data.generatedPassword);
@@ -54,6 +75,7 @@ export function NewClientDialog() {
     setName("");
     setCompany("");
     setEmail("");
+    setResponsibleIds([]);
     setGeneratedPassword(null);
     router.refresh();
   }
@@ -101,6 +123,34 @@ export function NewClientDialog() {
                 <Label htmlFor="email">E-mail de acesso</Label>
                 <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
+              {team.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  <Label>Responsáveis (opcional)</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {team.map((m) => {
+                      const active = responsibleIds.includes(m.id);
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => toggleResponsible(m.id)}
+                          className={`flex items-center gap-1.5 rounded-full border py-1 pl-1 pr-2.5 text-sm transition-colors ${
+                            active ? "border-primary bg-primary/10" : "border-border bg-surface-2 text-muted"
+                          }`}
+                        >
+                          <span
+                            className="flex size-5 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                            style={{ background: m.colorVar }}
+                          >
+                            {m.name[0]}
+                          </span>
+                          {m.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <DialogFooter>
                 <Button type="submit" disabled={loading}>
                   {loading && <Loader2 className="size-4 animate-spin" />}

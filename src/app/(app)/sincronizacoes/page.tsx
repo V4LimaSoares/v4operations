@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/session";
+import { requireStaffModule } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/layout/page-header";
 import { SyncButton } from "@/components/admin/sync-button";
@@ -16,7 +16,7 @@ const STATUS_META: Record<SyncStatus, { label: string; variant: "positive" | "ne
 };
 
 export default async function SincronizacoesPage() {
-  await requireAdmin();
+  await requireStaffModule("sincronizacoes");
 
   const [accounts, logs] = await Promise.all([
     prisma.adAccount.findMany({

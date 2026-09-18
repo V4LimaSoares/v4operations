@@ -1,5 +1,5 @@
 import { Wallet, Eye, MousePointerClick, Percent, Target, TrendingUp, Gauge } from "lucide-react";
-import { requireUser } from "@/lib/session";
+import { requireModule } from "@/lib/session";
 import { resolveScope } from "@/lib/scope";
 import { prisma } from "@/lib/prisma";
 import { presetToRange, getSummaryWithComparison, getDailyTimeSeries, getCampaignPerformance } from "@/lib/data/metrics";
@@ -22,7 +22,7 @@ export default async function GoogleAdsPage({
 }: {
   searchParams: Promise<{ period?: string; clientId?: string }>;
 }) {
-  const user = await requireUser();
+  const user = await requireModule("google_ads");
   const params = await searchParams;
   const scope = resolveScope(user, params.clientId);
   const range = presetToRange(params.period ?? "30d");
@@ -73,8 +73,8 @@ export default async function GoogleAdsPage({
             <StatCard label="CPC" value={current.cpc} previousValue={previous.cpc} icon={Gauge} formatter={formatBRL} invertDelta />
             <StatCard label="CPM" value={current.cpm} previousValue={previous.cpm} icon={Gauge} formatter={formatBRL} invertDelta />
             <StatCard label="Conversões" value={current.conversions} previousValue={previous.conversions} icon={Target} formatter={(v) => formatNumber(v, 1)} />
-            <StatCard label="Custo/conversão" value={current.cpa} previousValue={previous.cpa} icon={Gauge} formatter={formatBRL} invertDelta />
-            <StatCard label="Valor de conversão" value={current.conversionValueBrl} previousValue={previous.conversionValueBrl} icon={TrendingUp} formatter={formatBRL} />
+            <StatCard label="CPA" value={current.cpa} previousValue={previous.cpa} icon={Gauge} formatter={formatBRL} invertDelta />
+            <StatCard label="Faturamento" value={current.conversionValueBrl} previousValue={previous.conversionValueBrl} icon={TrendingUp} formatter={formatBRL} />
             <StatCard label="ROAS" value={current.roas} previousValue={previous.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
           </div>
 

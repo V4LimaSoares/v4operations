@@ -8,6 +8,7 @@ export async function listClientsWithStats(range: DateRange) {
     include: {
       adAccounts: { select: { id: true, platform: true, name: true, dataSource: true } },
       users: { select: { id: true, email: true, active: true }, where: { role: "CLIENT" } },
+      teamMembers: { include: { teamMember: { select: { id: true, name: true, colorVar: true } } } },
     },
   });
 
@@ -50,6 +51,9 @@ export async function listClientsWithStats(range: DateRange) {
       name: c.name,
       company: c.company,
       status: c.status,
+      notes: c.notes,
+      slaGroupName: c.slaGroupName,
+      ekyteClientName: c.ekyteClientName,
       createdAt: c.createdAt,
       googleAccounts,
       metaAccounts,
@@ -59,6 +63,18 @@ export async function listClientsWithStats(range: DateRange) {
       conversions: agg.conversions,
       revenueBrl,
       roas: agg.costBrl > 0 ? revenueBrl / agg.costBrl : 0,
+      team: c.teamMembers.map((t) => t.teamMember),
     };
+  });
+}
+
+export async function getClientById(id: string) {
+  return prisma.client.findUnique({
+    where: { id },
+    include: {
+      adAccounts: { select: { id: true, platform: true, name: true, dataSource: true, externalId: true } },
+      users: { select: { id: true, email: true, active: true }, where: { role: "CLIENT" } },
+      teamMembers: { include: { teamMember: true }, orderBy: { teamMember: { name: "asc" } } },
+    },
   });
 }

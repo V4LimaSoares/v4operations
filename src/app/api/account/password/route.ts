@@ -37,6 +37,7 @@ export async function POST(req: Request) {
     sessionVersion: updated.sessionVersion,
     name: updated.name,
     email: updated.email,
+    modulePermissions: updated.modulePermissions,
   });
 
   return NextResponse.json({ ok: true });

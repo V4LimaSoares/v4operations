@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { Users, Building2, Wallet, RefreshCw, AlertTriangle } from "lucide-react";
-import { requireAdmin } from "@/lib/session";
+import { requireStaffModule } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { presetToRange, getMetricsSummary } from "@/lib/data/metrics";
 import { PageHeader } from "@/components/layout/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { formatBRL, formatNumber, formatDate } from "@/lib/utils";
 
 export default async function AdminOverviewPage() {
-  await requireAdmin();
+  await requireStaffModule("admin_overview");
   const range = presetToRange("30d");
 
   const [clientCount, activeClientCount, accountCount, googleCount, metaCount, demoCount, realCount, summary, recentLogs] =
@@ -50,7 +51,7 @@ export default async function AdminOverviewPage() {
             <Link href="/sincronizacoes" className="text-xs font-medium text-primary hover:underline">Ver todas</Link>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
-            {recentLogs.length === 0 && <p className="text-sm text-muted">Nenhuma sincronização registrada ainda.</p>}
+            {recentLogs.length === 0 && <EmptyState message="Nenhuma sincronização registrada ainda." className="py-4" />}
             {recentLogs.map((log) => (
               <div key={log.id} className="flex items-center justify-between border-b border-border pb-3 text-sm last:border-0 last:pb-0">
                 <div>
@@ -73,7 +74,7 @@ export default async function AdminOverviewPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-3 text-sm">
             {errorLogs.length === 0 ? (
-              <p className="text-muted">Nenhuma pendência de sincronização no momento.</p>
+              <EmptyState message="Nenhuma pendência de sincronização no momento." className="py-4" />
             ) : (
               errorLogs.map((log) => (
                 <div key={log.id} className="rounded-lg bg-negative-soft p-3 text-xs text-negative">

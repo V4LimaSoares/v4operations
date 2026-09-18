@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/session";
+import { requireModule } from "@/lib/session";
 import { resolveScope } from "@/lib/scope";
 import { generateInsightsForClient, generateInsightsForAllClients } from "@/lib/insights-engine";
 
 export async function POST(req: Request) {
-  const user = await requireUser();
+  const user = await requireModule("insights");
   const body = await req.json().catch(() => ({}));
   const scope = resolveScope(user, body.clientId);
 
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     return NextResponse.json(result);
   }
 
-  if (user.role !== "ADMIN") {
+  if (user.role === "CLIENT") {
     return NextResponse.json({ error: "Não autorizado." }, { status: 403 });
   }
 

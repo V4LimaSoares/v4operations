@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { Wallet, Eye, MousePointerClick, Percent, TrendingUp, Target, Receipt, Ticket, Gauge } from "lucide-react";
-import { requireUser } from "@/lib/session";
+import { requireModule } from "@/lib/session";
 import { resolveScope } from "@/lib/scope";
 import { presetToRange, getSummaryWithComparison, getDailyTimeSeries, getCampaignPerformance, getMetricsSummary } from "@/lib/data/metrics";
 import { PageHeader } from "@/components/layout/page-header";
 import { FiltersBar } from "@/components/layout/filters-bar";
 import { StatCard } from "@/components/dashboard/stat-card";
+import { HeroStat } from "@/components/dashboard/hero-stat";
 import { TimeSeriesChart } from "@/components/dashboard/time-series-chart";
 import { DonutChart } from "@/components/dashboard/donut-chart";
 import { PlatformBadge, DataSourceBadge, StatusBadge } from "@/components/dashboard/badges";
@@ -19,7 +20,7 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ period?: string; platform?: string; clientId?: string }>;
 }) {
-  const user = await requireUser();
+  const user = await requireModule("dashboard");
   const params = await searchParams;
   const scope = resolveScope(user, params.clientId);
   const range = presetToRange(params.period ?? "30d");
@@ -47,22 +48,26 @@ export default async function DashboardPage({
         actions={<FiltersBar />}
       />
 
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <HeroStat label="Investimento" value={current.costBrl} previousValue={previous.costBrl} icon={Wallet} formatter={formatBRL} tone="primary" />
+        <HeroStat label="Faturamento" value={current.revenueBrl} previousValue={previous.revenueBrl} icon={Receipt} formatter={formatBRL} tone="positive" />
+        <HeroStat label="ROAS" value={current.roas} previousValue={previous.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} tone="info" />
+        <HeroStat label="Conversões" value={current.conversions} previousValue={previous.conversions} icon={Target} formatter={(v) => formatNumber(v, 1)} tone="warning" />
+      </div>
+
+      <h2 className="mb-3 mt-6 text-xs font-semibold uppercase tracking-wide text-muted-2">Métricas detalhadas</h2>
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-        <StatCard label="Investimento" value={current.costBrl} previousValue={previous.costBrl} icon={Wallet} formatter={formatBRL} />
-        <StatCard label="Faturamento" value={current.revenueBrl} previousValue={previous.revenueBrl} icon={Receipt} formatter={formatBRL} />
-        <StatCard label="ROAS" value={current.roas} previousValue={previous.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
-        <StatCard label="Conversões" value={current.conversions} previousValue={previous.conversions} icon={Target} formatter={(v) => formatNumber(v, 1)} />
         <StatCard label="Impressões" value={current.impressions} previousValue={previous.impressions} icon={Eye} formatter={(v) => formatNumber(v)} />
         <StatCard label="Cliques" value={current.clicks} previousValue={previous.clicks} icon={MousePointerClick} formatter={(v) => formatNumber(v)} />
         <StatCard label="CTR" value={current.ctr} previousValue={previous.ctr} icon={Percent} formatter={(v) => formatPercent(v)} />
         <StatCard label="CPC" value={current.cpc} previousValue={previous.cpc} icon={Gauge} formatter={formatBRL} invertDelta />
         <StatCard label="CPM" value={current.cpm} previousValue={previous.cpm} icon={Gauge} formatter={formatBRL} invertDelta />
         <StatCard label="CPA" value={current.cpa} previousValue={previous.cpa} icon={Gauge} formatter={formatBRL} invertDelta />
-        <StatCard label="CAS" value={current.cpa} previousValue={previous.cpa} icon={Gauge} formatter={formatBRL} invertDelta />
         <StatCard label="Ticket médio" value={current.avgTicket} previousValue={previous.avgTicket} icon={Ticket} formatter={formatBRL} />
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <h2 className="mb-3 mt-6 text-xs font-semibold uppercase tracking-wide text-muted-2">Evolução no período</h2>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <TimeSeriesChart title="Investimento ao longo do tempo" data={series} metricKey="costBrl" format="brl" variant="area" color="var(--color-primary)" />
         <TimeSeriesChart title="Faturamento (valor de conversão) ao longo do tempo" data={series} metricKey="conversionValueBrl" format="brl" variant="line" color="var(--color-chart-yellow)" />
         <TimeSeriesChart title="Conversões ao longo do tempo" data={series} metricKey="conversions" format="decimal1" variant="bar" color="var(--color-chart-orange)" />

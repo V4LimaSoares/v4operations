@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "Material"
+  ALTER COLUMN "fileName" DROP NOT NULL,
+  ALTER COLUMN "filePath" DROP NOT NULL,
+  ALTER COLUMN "fileSizeBytes" DROP NOT NULL,
+  ALTER COLUMN "mimeType" DROP NOT NULL,
+  ADD COLUMN "linkUrl" TEXT;

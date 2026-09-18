@@ -14,11 +14,16 @@ function getSecretKey() {
 
 export type SessionPayload = {
   userId: string;
-  role: "ADMIN" | "CLIENT";
+  role: "ADMIN" | "STAFF" | "CLIENT";
   clientId: string | null;
   sessionVersion: number;
   name: string;
   email: string;
+  // Snapshot at login time, used only for proxy.ts's fast/coarse pre-redirect — NOT the source of
+  // truth. The authoritative check (requireModule) re-reads permissions from the database on
+  // every request, so a stale JWT here can at worst show a nav item for a split second longer
+  // than it should, never grant real access to a page or an API route.
+  modulePermissions: string[];
 };
 
 export async function hashPassword(password: string) {

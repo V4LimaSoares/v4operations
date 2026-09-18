@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireAdmin } from "@/lib/session";
+import { requireStaffModule } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { randomDailyMetric, splitAcrossChildren } from "@/lib/demo/generator";
 import { generateSearchTermVariants, randomSearchTermStatus, randomSearchTermMetric } from "@/lib/demo/search-terms";
@@ -10,7 +10,7 @@ import type { Prisma } from "@prisma/client";
 const schema = z.object({ adAccountId: z.string().min(1) });
 
 export async function POST(req: Request) {
-  const admin = await requireAdmin();
+  const admin = await requireStaffModule("sincronizacoes");
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {

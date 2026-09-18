@@ -1,7 +1,9 @@
-import { requireAdmin } from "@/lib/session";
+import { requireStaffModule } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import { listUnmatchedRealAccounts } from "@/lib/data/ad-accounts";
 import { PageHeader } from "@/components/layout/page-header";
 import { NewAccountDialog } from "@/components/admin/new-account-dialog";
+import { UnmatchedAccountsPanel } from "@/components/admin/unmatched-accounts-panel";
 import { SyncButton } from "@/components/admin/sync-button";
 import { PlatformBadge, DataSourceBadge } from "@/components/dashboard/badges";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,14 +11,15 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { formatDate } from "@/lib/utils";
 
 export default async function ContasPage() {
-  await requireAdmin();
+  await requireStaffModule("contas");
 
-  const [accounts, clients] = await Promise.all([
+  const [accounts, clients, unmatched] = await Promise.all([
     prisma.adAccount.findMany({
       include: { client: { select: { id: true, name: true, company: true } } },
       orderBy: { connectedAt: "desc" },
     }),
     prisma.client.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, company: true } }),
+    listUnmatchedRealAccounts(),
   ]);
 
   return (
@@ -26,6 +29,8 @@ export default async function ContasPage() {
         description="Contas de Google Ads e Meta Ads conectadas aos clientes"
         actions={<NewAccountDialog clients={clients} />}
       />
+
+      <UnmatchedAccountsPanel accounts={unmatched} clients={clients} />
 
       <Card>
         <CardContent className="p-0">

@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local dev fallback for uploaded materials (production uses a VPS bind mount instead)
+/uploads
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

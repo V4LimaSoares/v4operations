@@ -1,5 +1,5 @@
-import { FileDown, Presentation } from "lucide-react";
-import { requireUser } from "@/lib/session";
+import { FileDown, Presentation, Wallet, Target, Gauge, TrendingUp } from "lucide-react";
+import { requireModule } from "@/lib/session";
 import { resolveScope } from "@/lib/scope";
 import { presetToRange } from "@/lib/data/metrics";
 import { getReportData } from "@/lib/reports/data";
@@ -9,6 +9,7 @@ import { FiltersBar } from "@/components/layout/filters-bar";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DataSourceBadge } from "@/components/dashboard/badges";
+import { StatCard } from "@/components/dashboard/stat-card";
 import { formatBRL, formatNumber, formatDate } from "@/lib/utils";
 
 export default async function RelatorioPage({
@@ -16,7 +17,7 @@ export default async function RelatorioPage({
 }: {
   searchParams: Promise<{ period?: string; clientId?: string }>;
 }) {
-  const user = await requireUser();
+  const user = await requireModule("relatorio");
   const params = await searchParams;
   const scope = resolveScope(user, params.clientId);
   const period = params.period ?? "30d";
@@ -26,7 +27,7 @@ export default async function RelatorioPage({
     <div>
       <PageHeader
         title="Relatório"
-        description="Gere um relatório em PDF ou uma apresentação em PPT com o padrão visual V4 Lima Soares"
+        description="Gere um relatório em PDF ou uma apresentação em PPT com o padrão visual V4 Company"
         actions={<FiltersBar showPlatform={false} />}
       />
 
@@ -84,10 +85,10 @@ async function ReportPreview({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <Preview label="Investimento" value={formatBRL(data.current.costBrl)} />
-            <Preview label="Conversões" value={formatNumber(data.current.conversions, 1)} />
-            <Preview label="CPA" value={formatBRL(data.current.cpa)} highlight />
-            <Preview label="ROAS" value={`${data.current.roas.toFixed(2)}x`} />
+            <StatCard label="Investimento" value={data.current.costBrl} icon={Wallet} formatter={formatBRL} />
+            <StatCard label="Conversões" value={data.current.conversions} icon={Target} formatter={(v) => formatNumber(v, 1)} />
+            <StatCard label="CPA" value={data.current.cpa} icon={Gauge} formatter={formatBRL} invertDelta />
+            <StatCard label="ROAS" value={data.current.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
           </div>
         </CardContent>
       </Card>
@@ -131,15 +132,6 @@ async function ReportPreview({
           ))}
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-function Preview({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
-  return (
-    <div className="rounded-lg bg-surface-2 p-3">
-      <p className="text-xs font-medium uppercase text-muted">{label}</p>
-      <p className={`mt-1 text-lg font-semibold ${highlight ? "text-primary" : ""}`}>{value}</p>
     </div>
   );
 }
