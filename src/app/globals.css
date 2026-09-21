@@ -5,6 +5,7 @@
      theme and falls back to the OS default — that's the mismatched light scrollbar seen against
      the dark background. */
   color-scheme: light;
+  --scrollbar-thumb: #d3d4da;
 
   --background: #f6f6f8;
   --surface: #ffffff;
@@ -61,6 +62,7 @@
 :root:not([data-theme="light"]) {
   @media (prefers-color-scheme: dark) {
     color-scheme: dark;
+    --scrollbar-thumb: rgba(0, 0, 0, 0.7);
     --background: #0a0a0d;
     --surface: #131317;
     --surface-2: #18181d;
@@ -104,6 +106,7 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.7);
   --background: #0a0a0d;
   --surface: #131317;
   --surface-2: #18181d;
@@ -209,11 +212,21 @@ body::before {
   color: var(--primary-foreground);
 }
 
-.scrollbar-thin::-webkit-scrollbar {
+/* Discreet scrollbars everywhere — thin, transparent track, near-black thumb in the dark theme
+   (see --scrollbar-thumb per theme above). `scrollbar-width`/`scrollbar-color` covers Firefox,
+   the ::-webkit-scrollbar rules cover Chrome/Safari/Edge. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+*::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: var(--border);
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
   border-radius: 999px;
 }
