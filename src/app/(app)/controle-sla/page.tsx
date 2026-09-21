@@ -41,7 +41,7 @@ export default async function ControleSlaPage({
         actions={<RefreshNowButton />}
       />
 
-      <Tabs defaultValue="visao-geral">
+      <Tabs urlParam="tab" defaultValue="visao-geral">
         <TabsList>
           <TabsTrigger value="visao-geral">Visão Geral</TabsTrigger>
           <TabsTrigger value="notificacoes">Notificações</TabsTrigger>

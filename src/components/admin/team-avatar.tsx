@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 /** Shows the uploaded profile photo (via GET /api/team/[id]/avatar) when present, falling back
@@ -23,12 +26,14 @@ export function TeamAvatar({
    *  something that changes on each upload (e.g. Date.now()). */
   cacheBust?: number;
 }) {
-  if (photoUrl) {
+  const [failed, setFailed] = useState(false);
+  if (photoUrl && !failed) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={`/api/team/${id}/avatar${cacheBust ? `?v=${cacheBust}` : ""}`}
         alt={name}
+        onError={() => setFailed(true)}
         className={cn(className, "shrink-0 rounded-2xl object-cover shadow-[0_4px_16px_-4px_rgba(0,0,0,0.35)]")}
       />
     );

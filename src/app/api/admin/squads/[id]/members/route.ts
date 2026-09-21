@@ -21,6 +21,19 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     update: { role },
   });
 
+  // Designate this person on every client the squad already manages (existing links untouched).
+  const [squadClients, person] = await Promise.all([
+    prisma.squadClient.findMany({ where: { squadId }, select: { clientId: true } }),
+    prisma.teamMember.findUnique({ where: { id: parsed.data.teamMemberId }, select: { role: true } }),
+  ]);
+  for (const c of squadClients) {
+    await prisma.clientTeamMember.upsert({
+      where: { clientId_teamMemberId: { clientId: c.clientId, teamMemberId: parsed.data.teamMemberId } },
+      create: { clientId: c.clientId, teamMemberId: parsed.data.teamMemberId, role: role ?? person?.role ?? null },
+      update: {},
+    });
+  }
+
   const [squad, member] = await Promise.all([
     prisma.squad.findUnique({ where: { id: squadId }, select: { name: true } }),
     prisma.teamMember.findUnique({ where: { id: parsed.data.teamMemberId }, select: { name: true } }),

@@ -44,7 +44,7 @@ export default async function ClientesPage() {
     <div>
       <PageHeader title="Clientes" description="Todos os clientes cadastrados na agência" actions={<NewClientDialog team={team} />} />
 
-      <Tabs defaultValue="clientes">
+      <Tabs urlParam="tab" defaultValue="clientes">
         <TabsList>
           <TabsTrigger value="clientes">Clientes</TabsTrigger>
           <TabsTrigger value="health-score">Health Score</TabsTrigger>

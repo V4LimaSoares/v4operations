@@ -14,11 +14,28 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!parsed.success) {
     return NextResponse.json({ error: "clientId obrigatório." }, { status: 400 });
   }
+  const other = await prisma.squadClient.findFirst({
+    where: { clientId: parsed.data.clientId, squadId: { not: squadId } },
+    select: { squad: { select: { name: true } } },
+  });
+  if (other) {
+    return NextResponse.json({ error: `Este cliente já pertence ao squad ${other.squad.name}.` }, { status: 409 });
+  }
   await prisma.squadClient.upsert({
     where: { squadId_clientId: { squadId, clientId: parsed.data.clientId } },
     create: { squadId, clientId: parsed.data.clientId },
     update: {},
   });
+  // Every member of the squad becomes a designated professional on this client. Existing links
+  // are left untouched (update: {}), so a role/primary flag someone set by hand survives.
+  const members = await prisma.squadMember.findMany({ where: { squadId }, select: { teamMemberId: true, role: true, teamMember: { select: { role: true } } } });
+  for (const m of members) {
+    await prisma.clientTeamMember.upsert({
+      where: { clientId_teamMemberId: { clientId: parsed.data.clientId, teamMemberId: m.teamMemberId } },
+      create: { clientId: parsed.data.clientId, teamMemberId: m.teamMemberId, role: m.role ?? m.teamMember.role },
+      update: {},
+    });
+  }
 
   const [squad, client] = await Promise.all([
     prisma.squad.findUnique({ where: { id: squadId }, select: { name: true } }),

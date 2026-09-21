@@ -1,10 +1,36 @@
 "use client";
 
 import * as React from "react";
+import { useSearchParams } from "next/navigation";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cn } from "@/lib/utils";
 
-export const Tabs = TabsPrimitive.Root;
+/** With `urlParam`, the active tab lives in the URL (?tab=…) so "Voltar" from a detail page lands
+ *  on the same tab instead of resetting to the first one. Without it, plain uncontrolled tabs. */
+export function Tabs({
+  urlParam,
+  defaultValue,
+  value,
+  onValueChange,
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.Root> & { urlParam?: string }) {
+  const searchParams = useSearchParams();
+  const [inner, setInner] = React.useState(() => (urlParam ? searchParams.get(urlParam) : null) ?? defaultValue);
+  if (!urlParam) return <TabsPrimitive.Root defaultValue={defaultValue} value={value} onValueChange={onValueChange} {...props} />;
+  return (
+    <TabsPrimitive.Root
+      {...props}
+      value={value ?? inner}
+      onValueChange={(v) => {
+        setInner(v);
+        onValueChange?.(v);
+        const url = new URL(window.location.href);
+        url.searchParams.set(urlParam, v);
+        window.history.replaceState(window.history.state, "", url);
+      }}
+    />
+  );
+}
 
 export function TabsList({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.List>) {
   return (

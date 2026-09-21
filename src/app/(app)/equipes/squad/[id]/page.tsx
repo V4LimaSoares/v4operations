@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import { BackLink } from "@/components/layout/back-link";
 import Image from "next/image";
-import { ArrowLeft, Wallet, Percent, ListChecks, ShieldAlert, Users } from "lucide-react";
+import { Wallet, Percent, ListChecks, ShieldAlert, Users } from "lucide-react";
 import { requireStaffModule } from "@/lib/session";
 import { getSquadById, getSquadMrrAndChurn, squadTaskSummary, squadSlaAlertSummary } from "@/lib/data/squads";
 import { getSlaMonitor } from "@/lib/data/sla";
 import { listTeamMembers } from "@/lib/data/team";
 import { listClientOptions } from "@/lib/scope";
+import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/card";
 import { SquadMemberPanel } from "@/components/admin/squad-member-panel";
 import { SquadClientPanel } from "@/components/admin/squad-client-panel";
@@ -26,6 +27,9 @@ export default async function SquadDetailPage({ params }: { params: Promise<{ id
     getSlaMonitor(),
   ]);
   if (!squad) notFound();
+  const takenElsewhere = new Set(
+    (await prisma.squadClient.findMany({ where: { squadId: { not: id } }, select: { clientId: true } })).map((r) => r.clientId),
+  );
 
   const linkedMembers = squad.members.map((m) => ({
     id: m.teamMember.id,
@@ -47,9 +51,7 @@ export default async function SquadDetailPage({ params }: { params: Promise<{ id
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-4">
           <div>
-            <Link href="/equipes" className="mb-1.5 inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-foreground">
-              <ArrowLeft className="size-3.5" /> Voltar
-            </Link>
+            <BackLink fallbackHref="/equipes?tab=squad" />
             <div className="flex items-center gap-3">
               {squad.logoUrl ? (
                 <Image
@@ -104,7 +106,7 @@ export default async function SquadDetailPage({ params }: { params: Promise<{ id
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
             <Wallet className="size-4 text-muted" /> Clientes
           </div>
-          <SquadClientPanel squadId={squad.id} linked={linkedClients} available={allClients} />
+          <SquadClientPanel squadId={squad.id} linked={linkedClients} available={allClients.filter((c) => !takenElsewhere.has(c.id))} />
         </Card>
       </div>
     </div>

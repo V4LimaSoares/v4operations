@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Users } from "lucide-react";
 import { TeamMemberDialog, type AvailableUser } from "@/components/admin/team-member-dialog";
@@ -35,7 +36,14 @@ export function EquipesTabsSection({
   squadCards: SquadCardData[];
   availableUsers: AvailableUser[];
 }) {
-  const [tab, setTab] = useState("equipes");
+  const searchParams = useSearchParams();
+  const [tab, setTabState] = useState(searchParams.get("tab") === "squad" ? "squad" : "equipes");
+  const setTab = (v: string) => {
+    setTabState(v);
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", v);
+    window.history.replaceState(window.history.state, "", url);
+  };
 
   return (
     <>

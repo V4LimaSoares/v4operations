@@ -29,7 +29,7 @@ export default async function UsuariosPage() {
         actions={<UserDialog profiles={profileOptions} unlinkedTeamMembers={unlinkedTeamMembers} />}
       />
 
-      <Tabs defaultValue="users">
+      <Tabs urlParam="tab" defaultValue="users">
         <TabsList>
           <TabsTrigger value="users">Usuários</TabsTrigger>
           <TabsTrigger value="profiles">Perfis</TabsTrigger>

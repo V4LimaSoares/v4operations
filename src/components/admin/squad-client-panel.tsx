@@ -37,7 +37,8 @@ export function SquadClientPanel({
         body: JSON.stringify({ clientId }),
       });
       if (!res.ok) {
-        toast.error("Não foi possível vincular.");
+        const d = await res.json().catch(() => ({}));
+        toast.error(d.error ?? "Não foi possível vincular.");
         return;
       }
       setPickerValue("");

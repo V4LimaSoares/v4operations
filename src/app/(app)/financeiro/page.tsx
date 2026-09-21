@@ -50,7 +50,7 @@ export default async function FinanceiroPage({
     <div>
       <PageHeader title="Financeiro" description="Contas a pagar, royalties e fixo/pró-labore do time" />
 
-      <Tabs defaultValue="contas">
+      <Tabs urlParam="tab" defaultValue="contas">
         <TabsList>
           <TabsTrigger value="contas">Contas a Pagar</TabsTrigger>
           <TabsTrigger value="royalties">Royalties</TabsTrigger>

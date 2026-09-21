@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { BackLink } from "@/components/layout/back-link";
 
 export function PageHeader({
   title,
@@ -20,12 +19,7 @@ export function PageHeader({
     <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
       <div>
         {backHref && (
-          <Link
-            href={backHref}
-            className="mb-1.5 inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-foreground"
-          >
-            <ArrowLeft className="size-3.5" /> {backLabel}
-          </Link>
+          <BackLink fallbackHref={backHref} label={backLabel} />
         )}
         <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
         {description && <p className="mt-1 text-sm text-muted">{description}</p>}

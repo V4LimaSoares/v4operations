@@ -35,7 +35,7 @@ export default async function OperacaoPage({
         }
       />
 
-      <Tabs defaultValue="visao-geral">
+      <Tabs urlParam="tab" defaultValue="visao-geral">
         <TabsList>
           <TabsTrigger value="visao-geral">Visão Geral</TabsTrigger>
           <TabsTrigger value="tarefas">Tarefas</TabsTrigger>
