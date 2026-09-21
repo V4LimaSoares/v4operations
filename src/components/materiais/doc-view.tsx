@@ -34,7 +34,6 @@ export function DocView({ doc, isAdmin }: { doc: DocViewData; isAdmin: boolean }
   const [loading, setLoading] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [title, setTitle] = useState(doc.title);
-  const [icon, setIcon] = useState(doc.icon ?? "");
   const [contentMd, setContentMd] = useState(doc.contentMd);
 
   async function call(url: string, init: RequestInit) {
@@ -54,7 +53,7 @@ export function DocView({ doc, isAdmin }: { doc: DocViewData; isAdmin: boolean }
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    const data = await call(`/api/admin/materiais/docs/${doc.id}`, { method: "PATCH", body: JSON.stringify({ title, icon: icon || null, contentMd }) });
+    const data = await call(`/api/admin/materiais/docs/${doc.id}`, { method: "PATCH", body: JSON.stringify({ title, contentMd }) });
     if (data) {
       toast.success("Documento salvo.");
       setEditing(false);
@@ -79,11 +78,7 @@ export function DocView({ doc, isAdmin }: { doc: DocViewData; isAdmin: boolean }
   if (editing) {
     return (
       <form onSubmit={save} className="flex flex-col gap-4">
-        <div className="grid grid-cols-[5rem_1fr] gap-3">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="doc-icon">Ícone</Label>
-            <Input id="doc-icon" value={icon} onChange={(e) => setIcon(e.target.value)} maxLength={4} placeholder="📄" />
-          </div>
+        <div className="grid grid-cols-1 gap-3">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="doc-title">Título</Label>
             <Input id="doc-title" required value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -108,7 +103,7 @@ export function DocView({ doc, isAdmin }: { doc: DocViewData; isAdmin: boolean }
           </div>
         </div>
         <div className="flex items-center justify-between">
-          <Button type="button" variant="ghost" disabled={loading} onClick={() => { setTitle(doc.title); setIcon(doc.icon ?? ""); setContentMd(doc.contentMd); setEditing(false); }}>
+          <Button type="button" variant="ghost" disabled={loading} onClick={() => { setTitle(doc.title); setContentMd(doc.contentMd); setEditing(false); }}>
             Cancelar
           </Button>
           <Button type="submit" disabled={loading}>
@@ -126,7 +121,6 @@ export function DocView({ doc, isAdmin }: { doc: DocViewData; isAdmin: boolean }
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight">
-            {doc.icon && <span className="mr-2">{doc.icon}</span>}
             {doc.title}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -193,7 +187,7 @@ export function DocView({ doc, isAdmin }: { doc: DocViewData; isAdmin: boolean }
               <Link key={c.id} href={`/materiais/docs/${c.id}`}>
                 <Card className="flex items-center gap-3 p-4 transition-all hover:-translate-y-0.5 hover:border-muted-2 hover:shadow-lg">
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-base text-primary">
-                    {c.icon ?? <FileText className="size-4" />}
+                    <FileText className="size-4" />
                   </span>
                   <span className="truncate text-sm font-medium">{c.title}</span>
                 </Card>

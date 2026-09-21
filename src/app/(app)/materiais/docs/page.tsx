@@ -42,7 +42,7 @@ export default async function DocsIndexPage({ searchParams }: { searchParams: Pr
             {results.map((d) => (
               <Link key={d.id} href={`/materiais/docs/${d.id}`}>
                 <Card className="flex items-center gap-3 p-4 transition-all hover:-translate-y-0.5 hover:shadow-lg">
-                  <span className="text-lg">{d.icon ?? <FileText className="size-4" />}</span>
+                  <span className="text-lg"><FileText className="size-4 text-primary" /></span>
                   <span className="truncate text-sm font-medium">{d.title}</span>
                 </Card>
               </Link>
@@ -57,7 +57,7 @@ export default async function DocsIndexPage({ searchParams }: { searchParams: Pr
             <Link key={d.id} href={`/materiais/docs/${d.id}`}>
               <Card className="flex h-full flex-col gap-3 p-5 transition-all hover:-translate-y-0.5 hover:border-muted-2 hover:shadow-lg">
                 <span className="flex size-11 items-center justify-center rounded-xl bg-primary-soft text-xl text-primary">
-                  {d.icon ?? <FileText className="size-5" />}
+                  <FileText className="size-5" />
                 </span>
                 <div className="text-sm font-semibold leading-snug">{d.title}</div>
                 {d._count.children > 0 && <div className="text-xs text-muted-2">{d._count.children} sub-página{d._count.children === 1 ? "" : "s"}</div>}

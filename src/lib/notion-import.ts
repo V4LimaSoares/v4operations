@@ -59,15 +59,15 @@ const val = (b: unknown): Block | undefined => {
 };
 
 async function post(path: string, body: unknown): Promise<any> {
-  for (let attempt = 0; attempt < 4; attempt++) {
+  for (let attempt = 0; attempt < 6; attempt++) {
     try {
       const res = await fetch(API + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       if (res.ok) return await res.json();
-      if (res.status === 429 || res.status >= 500) await sleep(1500 * (attempt + 1));
+      if (res.status === 429 || res.status >= 500) await sleep(2500 * (attempt + 1));
       else throw new Error(`Notion respondeu ${res.status} em ${path}`);
     } catch (err) {
-      if (attempt === 3) throw err;
-      await sleep(1000 * (attempt + 1));
+      if (attempt === 5) throw err;
+      await sleep(2000 * (attempt + 1));
     }
   }
   throw new Error(`Falha ao chamar ${path}`);
@@ -117,6 +117,8 @@ async function queryRows(collectionId: string, viewId: string): Promise<{ ids: s
   return { ids: res.result?.reducerResults?.collection_group_results?.blockIds ?? [], collection: (c?.value ?? c) as Collection | undefined };
 }
 
+const EMOJI = /[\p{Extended_Pictographic}\uFE0F\u200D\u20E3]/gu;
+const noEmoji = (t: string) => t.replace(EMOJI, "").replace(/([^\s|>])[ \t]{2,}(?=\S)/g, "$1 ").replace(/^(#{1,3}|>|[-*]|\d+\.)[ \t]{2,}/gm, "$1 ");
 const plain = (rt?: RichText) => (rt ?? []).map((s) => s[0]).join("");
 const dashless = (id: string) => id.replace(/-/g, "");
 
@@ -198,7 +200,7 @@ async function renderBlocks(ids: string[], ctx: Ctx, indent = ""): Promise<strin
       case "to_do": out.push(`${indent}- [${plain(b.properties?.checked) === "Yes" ? "x" : " "}] ${text}\n`); break;
       case "toggle": out.push(`\n<details>\n<summary>${plain(b.properties?.title)}</summary>\n\n${(await renderBlocks(kids, ctx)).trim()}\n\n</details>\n\n`); break;
       case "quote": out.push(`${indent}> ${text}\n\n`); break;
-      case "callout": out.push(`${indent}> ${(b.format?.page_icon as string) ?? "💡"} ${text}\n${kids.length ? (await renderBlocks(kids, ctx, "> ")) : ""}\n`); break;
+      case "callout": out.push(`${indent}> ${text}\n${kids.length ? (await renderBlocks(kids, ctx, "> ")) : ""}\n`); break;
       case "code": out.push(`\`\`\`${plain(b.properties?.language).toLowerCase()}\n${plain(b.properties?.title)}\n\`\`\`\n\n`); break;
       case "divider": out.push("---\n\n"); break;
       case "equation": out.push(`\`${plain(b.properties?.title)}\`\n\n`); break;
@@ -221,7 +223,7 @@ async function renderBlocks(ids: string[], ctx: Ctx, indent = ""): Promise<strin
         }
         break;
       }
-      case "page": ctx.registerChild(b.id, false); out.push(`- [${(b.format?.page_icon as string) ?? ""} ${plain(b.properties?.title)}](notion-page:${b.id})\n`); break;
+      case "page": ctx.registerChild(b.id, false); out.push(`- [${plain(b.properties?.title)}](notion-page:${b.id})\n`); break;
       case "collection_view": case "collection_view_page": {
         const collId = b.collection_id ?? (b.format?.collection_pointer as { id?: string } | undefined)?.id;
         const owned = collId && ctx.data.collections[collId]?.parent_id === b.id;
@@ -257,8 +259,8 @@ export async function runNotionImport(opts: ImportOptions): Promise<ImportReport
     const data = await loadPage(notionId);
     const page = data.blocks[notionId];
     if (!page) { report.warnings.push(`Página não encontrada: ${notionId}`); return; }
-    const title = plain(page.properties?.title) || "Sem título";
-    const icon = (page.format?.page_icon as string | undefined) ?? null;
+    const title = noEmoji(plain(page.properties?.title)).trim() || "Sem título";
+    const icon = null;
     const cats = inherited?.schema ?? schema;
     const props: Record<string, string> = {};
     for (const [k, v] of Object.entries(page.properties ?? {})) {
@@ -270,7 +272,7 @@ export async function runNotionImport(opts: ImportOptions): Promise<ImportReport
 
     const children: { id: string; isRow: boolean }[] = [];
     const ctx: Ctx = { data, report, mode: opts.mode, registerChild: (id, isRow) => children.push({ id, isRow }) };
-    const md = (await renderBlocks(page.content ?? [], ctx)).replace(/\n{3,}/g, "\n\n").trim();
+    const md = noEmoji(await renderBlocks(page.content ?? [], ctx)).replace(/\n{3,}/g, "\n\n").trim();
 
     let docId: string | null = null;
     if (opts.mode === "import") {
