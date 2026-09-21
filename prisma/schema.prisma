@@ -654,6 +654,42 @@ model EkyteIntegration {
 
 // ---------- Materiais Operacionais (apresentações, playbooks, documentos) ----------
 
+// ---------- Documentos de Materiais Operacionais (árvore de páginas em Markdown) ----------
+
+model MaterialDoc {
+  id            String        @id @default(cuid())
+  parentId      String?
+  parent        MaterialDoc?  @relation("DocTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children      MaterialDoc[] @relation("DocTree")
+  title         String
+  icon          String?
+  contentMd     String        @default("") @db.Text
+  props         Json?
+  position      Int           @default(0)
+  // Where this page was imported from (attribution) and its id there — makes re-import
+  // idempotent; editedLocally protects manual edits from being overwritten by a re-import.
+  sourceUrl     String?
+  sourceId      String?       @unique
+  editedLocally Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  updatedByName String?
+
+  @@index([parentId, position])
+}
+
+// Singleton row tracking the background Notion import (progress + final report).
+model MaterialDocImport {
+  id         String   @id @default(cuid())
+  status     String   @default("IDLE") // IDLE | RUNNING | DONE | ERROR
+  mode       String   @default("dry-run")
+  pages      Int      @default(0)
+  images     Int      @default(0)
+  reportJson Json?
+  message    String?
+  updatedAt  DateTime @updatedAt
+}
+
 // ---------- Financeiro (Contas a Pagar, Royalties, Fixo/Pró-labore) ----------
 
 model RecurringExpense {

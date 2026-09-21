@@ -3,6 +3,7 @@ import { listMaterials } from "@/lib/data/materials";
 import { PageHeader } from "@/components/layout/page-header";
 import { MaterialDialog } from "@/components/admin/material-dialog";
 import { MaterialCard } from "@/components/admin/material-card";
+import { MateriaisTabs } from "@/components/materiais/materiais-tabs";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -18,6 +19,7 @@ export default async function MateriaisPage() {
         description="Apresentações, playbooks e documentos de referência para o time"
         actions={<MaterialDialog />}
       />
+      <MateriaisTabs active="files" />
 
       {materials.length === 0 ? (
         <Card>

@@ -230,3 +230,27 @@ body::before {
   background: var(--scrollbar-thumb);
   border-radius: 999px;
 }
+
+/* Rendered document body (Materiais Operacionais > Documentos) — no typography plugin in this
+   project, so the handful of elements Markdown produces are styled here. */
+.doc-prose { font-size: 0.9rem; line-height: 1.7; color: var(--foreground); overflow-wrap: anywhere; }
+.doc-prose > * + * { margin-top: 0.85em; }
+.doc-prose h1 { font-size: 1.5rem; font-weight: 700; margin-top: 1.6em; letter-spacing: -0.01em; }
+.doc-prose h2 { font-size: 1.25rem; font-weight: 650; margin-top: 1.5em; }
+.doc-prose h3 { font-size: 1.05rem; font-weight: 600; margin-top: 1.3em; }
+.doc-prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
+.doc-prose ul { list-style: disc; padding-left: 1.4em; }
+.doc-prose ol { list-style: decimal; padding-left: 1.4em; }
+.doc-prose li + li { margin-top: 0.25em; }
+.doc-prose blockquote { border-left: 3px solid var(--primary); padding: 0.4em 1em; background: var(--surface-2); border-radius: 0.5rem; color: var(--muted); }
+.doc-prose hr { border: 0; border-top: 1px solid var(--border); margin: 1.5em 0; }
+.doc-prose img { max-width: 100%; border-radius: 0.75rem; }
+.doc-prose code { font-size: 0.85em; background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 0.35rem; }
+.doc-prose pre { background: var(--surface-2); padding: 0.9em 1em; border-radius: 0.75rem; overflow-x: auto; }
+.doc-prose pre code { background: transparent; padding: 0; }
+.doc-prose table { width: 100%; border-collapse: collapse; font-size: 0.85rem; display: block; overflow-x: auto; }
+.doc-prose th, .doc-prose td { border: 1px solid var(--border); padding: 0.5em 0.75em; text-align: left; }
+.doc-prose th { background: var(--surface-2); font-weight: 600; }
+.doc-prose details { border: 1px solid var(--border); border-radius: 0.75rem; padding: 0.6em 1em; background: var(--surface-2); }
+.doc-prose summary { cursor: pointer; font-weight: 600; }
+.doc-prose input[type="checkbox"] { margin-right: 0.4em; }
