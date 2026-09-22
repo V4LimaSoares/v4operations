@@ -7,6 +7,12 @@
   color-scheme: light;
   --scrollbar-thumb: #d3d4da;
 
+  /* Floating sidebar card — brand red in light theme; dark theme swaps this to a neutral dark
+     gray instead (below) so the sidebar doesn't compete with the red used for real alerts/CTAs. */
+  --sidebar-from: #e50815;
+  --sidebar-to: #b20710;
+  --sidebar-shadow: rgba(229, 8, 21, 0.45);
+
   --background: #f6f6f8;
   --surface: #ffffff;
   --surface-2: #f0f1f4;
@@ -71,6 +77,10 @@
     --muted: #9a9ba5;
     --muted-2: #6f707a;
 
+    --sidebar-from: #2b2b33;
+    --sidebar-to: #18181d;
+    --sidebar-shadow: rgba(0, 0, 0, 0.55);
+
     --primary: #e50815;
     --primary-foreground: #ffffff;
     --primary-soft: #2a0f10;
@@ -114,6 +124,10 @@
   --foreground: #f2f2f5;
   --muted: #9a9ba5;
   --muted-2: #6f707a;
+
+  --sidebar-from: #2b2b33;
+  --sidebar-to: #18181d;
+  --sidebar-shadow: rgba(0, 0, 0, 0.55);
 
   --primary: #e50815;
   --primary-foreground: #ffffff;

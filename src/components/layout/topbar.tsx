@@ -14,7 +14,7 @@ export function Topbar({
   clients?: { id: string; name: string; company: string }[];
 }) {
   return (
-    <header className="relative z-20 flex h-16 shrink-0 items-center justify-between gap-3 border-b border-border/70 bg-surface/70 px-4 backdrop-blur-xl lg:px-6">
+    <header className="relative z-20 flex h-16 shrink-0 items-center justify-between gap-3 px-4 lg:px-6">
       <div className="flex items-center gap-3">
         <MobileNav role={user.role} appName={appName} modulePermissions={user.modulePermissions} />
       </div>

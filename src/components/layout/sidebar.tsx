@@ -105,9 +105,13 @@ export function Sidebar({
     >
       <div
         className={cn(
-          "absolute inset-y-3 left-3 z-30 flex w-[72px] flex-col overflow-hidden rounded-[28px] bg-gradient-to-b from-primary to-[#b20710] shadow-[0_20px_50px_-12px_rgba(229,8,21,0.45)] transition-[width] duration-200 ease-out",
+          "absolute inset-y-3 left-3 z-30 flex w-[72px] flex-col overflow-hidden rounded-[28px] transition-[width] duration-200 ease-out",
           pinned ? "w-64" : "group-hover:w-64"
         )}
+        style={{
+          background: "linear-gradient(180deg, var(--sidebar-from), var(--sidebar-to))",
+          boxShadow: "0 20px 50px -12px var(--sidebar-shadow)",
+        }}
       >
         <div className="flex h-16 shrink-0 items-center gap-2.5 px-3.5">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white shadow-[0_6px_16px_-4px_rgba(0,0,0,0.3)]">
@@ -149,7 +153,7 @@ export function Sidebar({
                   className={cn(
                     "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-colors",
                     active
-                      ? "border border-white/20 bg-white/16 text-white"
+                      ? "bg-white/16 text-white"
                       : "text-white/80 hover:bg-white/10 hover:text-white"
                   )}
                 >
@@ -202,7 +206,7 @@ export function Sidebar({
                           className={cn(
                             "flex items-center gap-3 rounded-xl py-2 pl-6 pr-2.5 text-sm font-medium transition-colors",
                             active
-                              ? "border border-white/20 bg-white/16 text-white"
+                              ? "bg-white/16 text-white"
                               : "text-white/65 hover:bg-white/10 hover:text-white"
                           )}
                         >
