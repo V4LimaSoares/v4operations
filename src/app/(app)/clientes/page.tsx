@@ -10,6 +10,7 @@ import { NewClientDialog } from "@/components/admin/new-client-dialog";
 import { ClientsTable } from "@/components/admin/clients-table";
 import { HealthScoreTable } from "@/components/admin/health-score-table";
 import { StatCard } from "@/components/dashboard/stat-card";
+import { SyncHealthScoreButton } from "@/components/admin/sync-health-score-button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatBRL, formatPercent } from "@/lib/utils";
 
@@ -17,7 +18,7 @@ import { formatBRL, formatPercent } from "@/lib/utils";
 // earlier: the two were separate top-level nav entries for what's really one audience (the
 // agency's client roster), just two different views of it (cadastro vs. saúde da conta).
 export default async function ClientesPage() {
-  await requireStaffModule("clientes");
+  const user = await requireStaffModule("clientes");
   const range = presetToRange("30d");
   const [clients, team, hsEntries, hsAggregate, clientOptions] = await Promise.all([
     listClientsWithStats(range),
@@ -42,6 +43,11 @@ export default async function ClientesPage() {
         </TabsContent>
 
         <TabsContent value="health-score">
+          {user.role === "ADMIN" && (
+            <div className="mb-4 flex justify-end">
+              <SyncHealthScoreButton />
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <StatCard label="Clientes acompanhados" value={hsAggregate.totalClients} icon={Users} formatter={(v) => String(v)} />
             <StatCard label="Saudáveis" value={hsAggregate.healthy} icon={HeartPulse} formatter={(v) => String(v)} />
