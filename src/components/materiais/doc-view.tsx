@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Pencil, Trash2, ArrowUp, ArrowDown, ExternalLink, FileText } from "lucide-react";
+import { Loader2, Pencil, Trash2, ArrowUp, ArrowDown, ExternalLink } from "lucide-react";
+import { DocIcon } from "@/lib/doc-icons";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -187,7 +188,7 @@ export function DocView({ doc, isAdmin }: { doc: DocViewData; isAdmin: boolean }
               <Link key={c.id} href={`/materiais/docs/${c.id}`}>
                 <Card className="flex items-center gap-3 p-4 transition-all hover:-translate-y-0.5 hover:border-muted-2 hover:shadow-lg">
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-base text-primary">
-                    <FileText className="size-4" />
+                    <DocIcon title={c.title} className="size-4" />
                   </span>
                   <span className="truncate text-sm font-medium">{c.title}</span>
                 </Card>

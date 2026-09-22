@@ -7,7 +7,7 @@ export function MateriaisTabs({ active }: { active: "docs" | "files" }) {
   return (
     <div className="mb-6 inline-flex gap-1 rounded-lg bg-surface-2 p-1">
       <Link href="/materiais/docs" className={cn(base, active === "docs" ? "bg-surface shadow-sm" : "text-muted hover:text-foreground")}>
-        Documentos
+        Documentos Notion
       </Link>
       <Link href="/materiais" className={cn(base, active === "files" ? "bg-surface shadow-sm" : "text-muted hover:text-foreground")}>
         Arquivos e links

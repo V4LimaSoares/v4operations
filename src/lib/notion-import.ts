@@ -259,7 +259,7 @@ export async function runNotionImport(opts: ImportOptions): Promise<ImportReport
     const data = await loadPage(notionId);
     const page = data.blocks[notionId];
     if (!page) { report.warnings.push(`Página não encontrada: ${notionId}`); return; }
-    const title = noEmoji(plain(page.properties?.title)).trim() || "Sem título";
+    const title = noEmoji(plain(page.properties?.title)).trim().replace(/^\d+\s*[-–—.)]\s*/, "") || "Sem título";
     const icon = null;
     const cats = inherited?.schema ?? schema;
     const props: Record<string, string> = {};
