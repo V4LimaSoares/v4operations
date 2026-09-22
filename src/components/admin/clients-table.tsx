@@ -85,7 +85,7 @@ export function ClientsTable({ clients }: { clients: ClientRow[] }) {
                       <span className="text-xs text-muted-2">—</span>
                     ) : (
                       <div className="flex -space-x-1.5">
-                        {c.team.map((m) => (
+                        {c.team.slice(0, 4).map((m) => (
                           <div
                             key={m.id}
                             title={m.name}
@@ -95,6 +95,14 @@ export function ClientsTable({ clients }: { clients: ClientRow[] }) {
                             {m.name[0]}
                           </div>
                         ))}
+                        {c.team.length > 4 && (
+                          <div
+                            title={c.team.slice(4).map((m) => m.name).join(", ")}
+                            className="flex size-6 items-center justify-center rounded-full border-2 border-surface bg-surface-2 text-[10px] font-bold text-muted"
+                          >
+                            +{c.team.length - 4}
+                          </div>
+                        )}
                       </div>
                     )}
                   </TableCell>
