@@ -11,6 +11,7 @@ import { ClientsTable } from "@/components/admin/clients-table";
 import { HealthScoreTable } from "@/components/admin/health-score-table";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { SyncHealthScoreButton } from "@/components/admin/sync-health-score-button";
+import { PurgeOrphanHealthScoreButton } from "@/components/admin/purge-orphan-health-score-button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatBRL, formatPercent } from "@/lib/utils";
 
@@ -44,7 +45,8 @@ export default async function ClientesPage() {
 
         <TabsContent value="health-score">
           {user.role === "ADMIN" && (
-            <div className="mb-4 flex justify-end">
+            <div className="mb-4 flex justify-end gap-2">
+              <PurgeOrphanHealthScoreButton />
               <SyncHealthScoreButton />
             </div>
           )}
