@@ -13,14 +13,6 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatBRL, formatPercent } from "@/lib/utils";
 
-function flagVariant(flag: string | null): "positive" | "warning" | "negative" | "default" {
-  const f = (flag ?? "").toLowerCase();
-  if (f.startsWith("risco iminente")) return "negative";
-  if (f.startsWith("risco")) return "warning";
-  if (f.startsWith("saud")) return "positive";
-  return "default";
-}
-
 // "Clientes" and "Health Score" merged into one route with tabs — same move as SLA/Operação
 // earlier: the two were separate top-level nav entries for what's really one audience (the
 // agency's client roster), just two different views of it (cadastro vs. saúde da conta).
@@ -34,11 +26,6 @@ export default async function ClientesPage() {
     getHealthScoreAggregate(),
     listClientOptions(),
   ]);
-
-  const sortedHs = [...hsEntries].sort((a, b) => {
-    const rank = (f: string | null) => (flagVariant(f) === "negative" ? 0 : flagVariant(f) === "warning" ? 1 : 2);
-    return rank(a.flag) - rank(b.flag);
-  });
 
   return (
     <div>
@@ -69,7 +56,7 @@ export default async function ClientesPage() {
             <StatCard label="Em churn" value={hsAggregate.churn} icon={Siren} formatter={(v) => String(v)} invertDelta />
           </div>
 
-          <HealthScoreTable entries={sortedHs} clients={clientOptions} />
+          <HealthScoreTable entries={hsEntries} clients={clientOptions} />
         </TabsContent>
       </Tabs>
     </div>

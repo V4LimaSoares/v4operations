@@ -75,6 +75,7 @@ export async function getClientById(id: string) {
       adAccounts: { select: { id: true, platform: true, name: true, dataSource: true, externalId: true } },
       users: { select: { id: true, email: true, active: true }, where: { role: "CLIENT" } },
       teamMembers: { include: { teamMember: true }, orderBy: { teamMember: { name: "asc" } } },
+      squads: { include: { squad: { select: { id: true, name: true, logoUrl: true } } } },
     },
   });
 }

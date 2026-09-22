@@ -42,6 +42,11 @@ export async function POST(req: Request) {
       users: {
         create: { name, email: email.toLowerCase(), passwordHash, role: "CLIENT" },
       },
+      // Every client shows up in the Health Score tab from day one — the roster the two tabs
+      // share (see clientes/page.tsx) must never have a Client without a matching entry.
+      healthScoreEntries: {
+        create: { clientName: name, phase: "ONGOING" },
+      },
     },
     // Never return the bcrypt hash to the client (nested the same way it's created above).
     include: { users: { omit: { passwordHash: true } } },

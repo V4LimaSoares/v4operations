@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { requireStaffModule } from "@/lib/session";
 import { getClientById } from "@/lib/data/clients";
 import { listClientOptions } from "@/lib/scope";
@@ -55,6 +56,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
   ]);
 
   const linkedTeam = client.teamMembers.map((t) => ({ ...t.teamMember, role: t.role }));
+  const squad = client.squads[0]?.squad ?? null;
 
   return (
     <div>
@@ -89,6 +91,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
             current={current}
             healthEntries={healthEntries}
             linkedTeam={linkedTeam}
+            squad={squad}
           />
         </TabsContent>
 
@@ -150,6 +153,17 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
         </TabsContent>
 
         <TabsContent value="equipe">
+          <Card className="mb-4 p-5">
+            <h3 className="mb-3 text-sm font-semibold">Squad</h3>
+            {squad ? (
+              <Link href={`/equipes/squad/${squad.id}`} className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-2 py-1.5 pl-1.5 pr-3 text-sm font-medium hover:border-muted-2">
+                <span className="flex size-6 items-center justify-center rounded-full bg-primary-soft text-xs font-bold text-primary">{squad.name[0]}</span>
+                {squad.name}
+              </Link>
+            ) : (
+              <p className="text-sm text-muted">Este cliente não pertence a nenhum squad ainda.</p>
+            )}
+          </Card>
           <Card className="p-5">
             <TeamLinkPanel clientId={client.id} linked={linkedTeam} available={allTeam} />
           </Card>
@@ -171,11 +185,13 @@ function OverviewTab({
   current,
   healthEntries,
   linkedTeam,
+  squad,
 }: {
   client: { slaGroupName: string | null; ekyteClientName: string | null };
   current: { costBrl: number; revenueBrl: number; roas: number };
   healthEntries: Awaited<ReturnType<typeof getHealthScoreEntriesByClientId>>;
   linkedTeam: { id: string; name: string; colorVar: string }[];
+  squad: { id: string; name: string } | null;
 }) {
   const latestHealth = healthEntries[0] ?? null;
   return (
@@ -207,6 +223,17 @@ function OverviewTab({
           </div>
         ) : (
           <p className="text-sm text-muted">Sem registro de Health Score ainda.</p>
+        )}
+      </Card>
+
+      <Card className="p-5">
+        <h3 className="mb-3 text-sm font-semibold">Squad</h3>
+        {squad ? (
+          <Link href={`/equipes/squad/${squad.id}`} className="text-sm font-medium text-primary hover:underline">
+            {squad.name}
+          </Link>
+        ) : (
+          <p className="text-sm text-muted">Sem squad vinculado.</p>
         )}
       </Card>
 
