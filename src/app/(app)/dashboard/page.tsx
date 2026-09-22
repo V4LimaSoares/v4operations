@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Wallet, Eye, MousePointerClick, Percent, TrendingUp, Target, Receipt, Ticket, Gauge } from "lucide-react";
+import { Wallet, Eye, MousePointerClick, Percent, TrendingUp, Target, Receipt, Ticket, Coins, Layers, Crosshair } from "lucide-react";
 import { requireModule } from "@/lib/session";
 import { performanceTabItems } from "@/lib/nav";
 import { PerformanceTabs } from "@/components/layout/performance-tabs";
@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { FiltersBar } from "@/components/layout/filters-bar";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { HeroStat } from "@/components/dashboard/hero-stat";
-import { TimeSeriesChart } from "@/components/dashboard/time-series-chart";
+import { MetricTrendChart } from "@/components/dashboard/metric-trend-chart";
 import { DonutChart } from "@/components/dashboard/donut-chart";
 import { PlatformBadge, DataSourceBadge, StatusBadge } from "@/components/dashboard/badges";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -63,21 +63,29 @@ export default async function DashboardPage({
       </div>
 
       <h2 className="mb-3 mt-6 text-xs font-semibold uppercase tracking-wide text-muted-2">Métricas detalhadas</h2>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-        <StatCard label="Impressões" value={current.impressions} previousValue={previous.impressions} icon={Eye} formatter={(v) => formatNumber(v)} />
-        <StatCard label="Cliques" value={current.clicks} previousValue={previous.clicks} icon={MousePointerClick} formatter={(v) => formatNumber(v)} />
-        <StatCard label="CTR" value={current.ctr} previousValue={previous.ctr} icon={Percent} formatter={(v) => formatPercent(v)} />
-        <StatCard label="CPC" value={current.cpc} previousValue={previous.cpc} icon={Gauge} formatter={formatBRL} invertDelta />
-        <StatCard label="CPM" value={current.cpm} previousValue={previous.cpm} icon={Gauge} formatter={formatBRL} invertDelta />
-        <StatCard label="CPA" value={current.cpa} previousValue={previous.cpa} icon={Gauge} formatter={formatBRL} invertDelta />
-        <StatCard label="Ticket médio" value={current.avgTicket} previousValue={previous.avgTicket} icon={Ticket} formatter={formatBRL} />
+      <div className="flex flex-wrap gap-4">
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="Impressões" value={current.impressions} previousValue={previous.impressions} icon={Eye} formatter={(v) => formatNumber(v)} />
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="Cliques" value={current.clicks} previousValue={previous.clicks} icon={MousePointerClick} formatter={(v) => formatNumber(v)} />
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="CTR" value={current.ctr} previousValue={previous.ctr} icon={Percent} formatter={(v) => formatPercent(v)} />
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="CPC" value={current.cpc} previousValue={previous.cpc} icon={Coins} formatter={formatBRL} invertDelta />
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="CPM" value={current.cpm} previousValue={previous.cpm} icon={Layers} formatter={formatBRL} invertDelta />
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="CPA" value={current.cpa} previousValue={previous.cpa} icon={Crosshair} formatter={formatBRL} invertDelta />
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="Ticket médio" value={current.avgTicket} previousValue={previous.avgTicket} icon={Ticket} formatter={formatBRL} />
       </div>
 
       <h2 className="mb-3 mt-6 text-xs font-semibold uppercase tracking-wide text-muted-2">Evolução no período</h2>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <TimeSeriesChart title="Investimento ao longo do tempo" data={series} metricKey="costBrl" format="brl" variant="area" color="var(--color-primary)" />
-        <TimeSeriesChart title="Faturamento (valor de conversão) ao longo do tempo" data={series} metricKey="conversionValueBrl" format="brl" variant="line" color="var(--color-chart-yellow)" />
-        <TimeSeriesChart title="Conversões ao longo do tempo" data={series} metricKey="conversions" format="decimal1" variant="bar" color="var(--color-chart-orange)" />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <MetricTrendChart
+            title="Evolução no período"
+            data={series}
+            metrics={[
+              { key: "costBrl", label: "Investimento", format: "brl", color: "var(--color-primary)" },
+              { key: "conversionValueBrl", label: "Faturamento", format: "brl", color: "var(--color-chart-yellow)" },
+              { key: "conversions", label: "Conversões", format: "decimal1", color: "var(--color-chart-orange)" },
+            ]}
+          />
+        </div>
         <DonutChart title="Investimento por plataforma" data={investmentByPlatform} format="brl" />
       </div>
 

@@ -1,4 +1,4 @@
-import { FileDown, Presentation, Wallet, Target, Gauge, TrendingUp } from "lucide-react";
+import { FileDown, Presentation, Wallet, Target, Crosshair, TrendingUp } from "lucide-react";
 import { requireModule } from "@/lib/session";
 import { performanceTabItems } from "@/lib/nav";
 import { PerformanceTabs } from "@/components/layout/performance-tabs";
@@ -94,7 +94,7 @@ async function ReportPreview({
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <StatCard label="Investimento" value={data.current.costBrl} icon={Wallet} formatter={formatBRL} />
             <StatCard label="Conversões" value={data.current.conversions} icon={Target} formatter={(v) => formatNumber(v, 1)} />
-            <StatCard label="CPA" value={data.current.cpa} icon={Gauge} formatter={formatBRL} invertDelta />
+            <StatCard label="CPA" value={data.current.cpa} icon={Crosshair} formatter={formatBRL} invertDelta />
             <StatCard label="ROAS" value={data.current.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
           </div>
         </CardContent>

@@ -1,4 +1,4 @@
-import { Wallet, Eye, MousePointerClick, Percent, Target, TrendingUp, Gauge, Users2, Repeat } from "lucide-react";
+import { Wallet, Eye, MousePointerClick, Percent, Target, TrendingUp, Coins, Layers, Crosshair, Users2, Repeat } from "lucide-react";
 import { requireModule } from "@/lib/session";
 import { performanceTabItems } from "@/lib/nav";
 import { PerformanceTabs } from "@/components/layout/performance-tabs";
@@ -70,10 +70,10 @@ export default async function MetaAdsPage({
             <StatCard label="Frequência" value={current.frequency} previousValue={previous.frequency} icon={Repeat} formatter={(v) => v.toFixed(2)} />
             <StatCard label="Cliques" value={current.clicks} previousValue={previous.clicks} icon={MousePointerClick} formatter={(v) => formatNumber(v)} />
             <StatCard label="CTR" value={current.ctr} previousValue={previous.ctr} icon={Percent} formatter={(v) => formatPercent(v)} />
-            <StatCard label="CPC" value={current.cpc} previousValue={previous.cpc} icon={Gauge} formatter={formatBRL} invertDelta />
-            <StatCard label="CPM" value={current.cpm} previousValue={previous.cpm} icon={Gauge} formatter={formatBRL} invertDelta />
+            <StatCard label="CPC" value={current.cpc} previousValue={previous.cpc} icon={Coins} formatter={formatBRL} invertDelta />
+            <StatCard label="CPM" value={current.cpm} previousValue={previous.cpm} icon={Layers} formatter={formatBRL} invertDelta />
             <StatCard label="Leads" value={current.leads} previousValue={previous.leads} icon={Target} formatter={(v) => formatNumber(v)} />
-            <StatCard label="CPA" value={current.cpa} previousValue={previous.cpa} icon={Gauge} formatter={formatBRL} invertDelta />
+            <StatCard label="CPA" value={current.cpa} previousValue={previous.cpa} icon={Crosshair} formatter={formatBRL} invertDelta />
             <StatCard label="Faturamento" value={current.conversionValueBrl} previousValue={previous.conversionValueBrl} icon={TrendingUp} formatter={formatBRL} />
             <StatCard label="ROAS" value={current.roas} previousValue={previous.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
           </div>

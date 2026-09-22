@@ -11,6 +11,7 @@ export function StatCard({
   icon: Icon,
   formatter,
   invertDelta = false,
+  className,
 }: {
   label: string;
   value: number;
@@ -19,12 +20,16 @@ export function StatCard({
   formatter: (v: number) => string;
   /** true for metrics where a decrease is the good direction (e.g. CPA, CPC) */
   invertDelta?: boolean;
+  /** For grids whose item count isn't a multiple of the column count — lets the card flex/wrap
+   *  instead of leaving a dangling empty cell in the last row (see Dashboard's "Métricas
+   *  detalhadas"). Merged onto the default padding, not a replacement for it. */
+  className?: string;
 }) {
   const delta = previousValue !== undefined ? pctChange(value, previousValue) : null;
   const isGood = delta === null ? null : invertDelta ? delta < 0 : delta > 0;
 
   return (
-    <Card className="p-5">
+    <Card className={cn("p-5", className)}>
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wide text-muted">{label}</span>
         {Icon && <Icon className="size-4 text-muted-2" />}
