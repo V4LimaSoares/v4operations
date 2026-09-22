@@ -37,6 +37,11 @@ export function ProlaboreTable({ rows, teamMembers }: { rows: ProlaboreRow[]; te
     return <EmptyState message="Nenhum colaborador com fixo/pró-labore cadastrado." className="py-6" />;
   }
 
+  // Columns nobody has data in yet (e.g. no one has been let go) stay hidden instead of
+  // rendering a full column of dashes — they reappear on their own the moment a row sets that
+  // field, since this checks the actual rows rather than a fixed column list.
+  const showTermination = rows.some((r) => r.terminationDate != null);
+
   return (
     <Table>
       <TableHeader>
@@ -47,7 +52,7 @@ export function ProlaboreTable({ rows, teamMembers }: { rows: ProlaboreRow[]; te
           <TableHead className="text-right">Porcentagem</TableHead>
           <TableHead className="text-right">Monetização/Indicação</TableHead>
           <TableHead>Data de Contratação</TableHead>
-          <TableHead>Data de Desligamento</TableHead>
+          {showTermination && <TableHead>Data de Desligamento</TableHead>}
           <TableHead>Status</TableHead>
           <TableHead>Ações</TableHead>
         </TableRow>
@@ -70,7 +75,7 @@ export function ProlaboreTable({ rows, teamMembers }: { rows: ProlaboreRow[]; te
             <TableCell className="text-right tabular-nums">{row.percentage != null ? `${row.percentage}%` : "—"}</TableCell>
             <TableCell className="text-right tabular-nums">{row.referralPercentage != null ? `${row.referralPercentage}%` : "—"}</TableCell>
             <TableCell>{row.hireDate ? formatDate(row.hireDate) : "—"}</TableCell>
-            <TableCell>{row.terminationDate ? formatDate(row.terminationDate) : "—"}</TableCell>
+            {showTermination && <TableCell>{row.terminationDate ? formatDate(row.terminationDate) : "—"}</TableCell>}
             <TableCell>
               <Badge variant={row.active ? "positive" : "outline"}>{row.active ? "Ativo" : "Inativo"}</Badge>
             </TableCell>

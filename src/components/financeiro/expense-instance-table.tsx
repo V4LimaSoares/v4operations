@@ -60,12 +60,17 @@ export function ExpenseInstanceTable({ rows }: { rows: ExpenseInstanceRow[] }) {
     return <EmptyState message="Nenhum lançamento neste mês." className="py-6" />;
   }
 
+  // Same reasoning as ProlaboreTable's Data de Desligamento: don't render a column of nothing
+  // but dashes — the Pró-labore instances this table shares with Contas a Pagar don't set a
+  // category, so it stayed empty for 11/11 rows.
+  const showCategory = rows.some((r) => r.category != null);
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Descrição</TableHead>
-          <TableHead>Categoria</TableHead>
+          {showCategory && <TableHead>Categoria</TableHead>}
           <TableHead className="text-right">Valor</TableHead>
           <TableHead>Vencimento</TableHead>
           <TableHead>Status</TableHead>
@@ -78,7 +83,7 @@ export function ExpenseInstanceTable({ rows }: { rows: ExpenseInstanceRow[] }) {
           return (
             <TableRow key={row.id}>
               <TableCell className="font-medium">{row.description}</TableCell>
-              <TableCell className="text-muted">{row.category ?? "—"}</TableCell>
+              {showCategory && <TableCell className="text-muted">{row.category ?? "—"}</TableCell>}
               <TableCell className="text-right tabular-nums">{formatBRL(row.amountBrl)}</TableCell>
               <TableCell className={info.variant === "negative" ? "text-negative" : undefined}>{formatDate(row.dueDate)}</TableCell>
               <TableCell>
