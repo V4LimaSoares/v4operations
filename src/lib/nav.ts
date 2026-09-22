@@ -108,7 +108,7 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
   {
     label: "Materiais Operacionais",
     icon: FolderOpen,
-    items: [{ href: "/materiais", label: "Materiais Operacionais", icon: FolderOpen }],
+    items: [{ href: "/materiais/docs", label: "Materiais Operacionais", icon: FolderOpen }],
   },
   {
     label: "Financeiro",
