@@ -1,4 +1,6 @@
 import { requireModule } from "@/lib/session";
+import { performanceTabItems } from "@/lib/nav";
+import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
@@ -66,11 +68,12 @@ const METRICS: Metric[] = [
 ];
 
 export default async function AjudaPage() {
-  await requireModule("ajuda");
+  const user = await requireModule("ajuda");
 
   return (
     <div>
       <PageHeader title="Ajuda" description="Perguntas frequentes e o que cada métrica do portal significa" />
+      <PerformanceTabs items={performanceTabItems(user.role, user.modulePermissions)} active="/ajuda" />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>

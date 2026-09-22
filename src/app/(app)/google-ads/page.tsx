@@ -1,5 +1,7 @@
 import { Wallet, Eye, MousePointerClick, Percent, Target, TrendingUp, Gauge } from "lucide-react";
 import { requireModule } from "@/lib/session";
+import { performanceTabItems } from "@/lib/nav";
+import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { resolveScope } from "@/lib/scope";
 import { prisma } from "@/lib/prisma";
 import { presetToRange, getSummaryWithComparison, getDailyTimeSeries, getCampaignPerformance } from "@/lib/data/metrics";
@@ -15,7 +17,7 @@ import { StatusBadge, DataSourceBadge, SearchTermStatusBadge } from "@/component
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { formatBRL, formatNumber, formatPercent, formatDate } from "@/lib/utils";
+import { formatBRL, formatNumber, formatPercent, formatDate, toQueryString } from "@/lib/utils";
 
 export default async function GoogleAdsPage({
   searchParams,
@@ -49,6 +51,11 @@ export default async function GoogleAdsPage({
   return (
     <div>
       <PageHeader title="Google Ads" description="Performance consolidada das contas de Google Ads" actions={<FiltersBar showPlatform={false} />} />
+      <PerformanceTabs
+        items={performanceTabItems(user.role, user.modulePermissions)}
+        active="/google-ads"
+        queryString={toQueryString(params)}
+      />
 
       {accounts.length === 0 ? (
         <Card className="p-10 text-center text-sm text-muted">

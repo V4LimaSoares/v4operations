@@ -1,5 +1,7 @@
 import { Wallet, Eye, MousePointerClick, Percent, Target, TrendingUp, Gauge, Users2, Repeat } from "lucide-react";
 import { requireModule } from "@/lib/session";
+import { performanceTabItems } from "@/lib/nav";
+import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { resolveScope } from "@/lib/scope";
 import { prisma } from "@/lib/prisma";
 import { presetToRange, getSummaryWithComparison, getDailyTimeSeries, getCampaignPerformance } from "@/lib/data/metrics";
@@ -12,7 +14,7 @@ import { StatusBadge, DataSourceBadge } from "@/components/dashboard/badges";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { formatBRL, formatNumber, formatPercent } from "@/lib/utils";
+import { formatBRL, formatNumber, formatPercent, toQueryString } from "@/lib/utils";
 
 export default async function MetaAdsPage({
   searchParams,
@@ -40,6 +42,11 @@ export default async function MetaAdsPage({
   return (
     <div>
       <PageHeader title="Meta Ads" description="Performance consolidada das contas de Facebook e Instagram Ads" actions={<FiltersBar showPlatform={false} />} />
+      <PerformanceTabs
+        items={performanceTabItems(user.role, user.modulePermissions)}
+        active="/meta-ads"
+        queryString={toQueryString(params)}
+      />
 
       {accounts.length === 0 ? (
         <Card className="p-10 text-center text-sm text-muted">

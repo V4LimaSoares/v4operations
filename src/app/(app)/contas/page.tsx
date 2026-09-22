@@ -1,4 +1,6 @@
 import { requireStaffModule } from "@/lib/session";
+import { performanceTabItems } from "@/lib/nav";
+import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { prisma } from "@/lib/prisma";
 import { listUnmatchedRealAccounts } from "@/lib/data/ad-accounts";
 import { PageHeader } from "@/components/layout/page-header";
@@ -11,7 +13,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { formatDate } from "@/lib/utils";
 
 export default async function ContasPage() {
-  await requireStaffModule("contas");
+  const user = await requireStaffModule("contas");
 
   const [accounts, clients, unmatched] = await Promise.all([
     prisma.adAccount.findMany({
@@ -29,6 +31,7 @@ export default async function ContasPage() {
         description="Contas de Google Ads e Meta Ads conectadas aos clientes"
         actions={<NewAccountDialog clients={clients} />}
       />
+      <PerformanceTabs items={performanceTabItems(user.role, user.modulePermissions)} active="/contas" />
 
       <UnmatchedAccountsPanel accounts={unmatched} clients={clients} />
 

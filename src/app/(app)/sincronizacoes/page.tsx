@@ -1,4 +1,6 @@
 import { requireStaffModule } from "@/lib/session";
+import { performanceTabItems } from "@/lib/nav";
+import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/layout/page-header";
 import { SyncButton } from "@/components/admin/sync-button";
@@ -16,7 +18,7 @@ const STATUS_META: Record<SyncStatus, { label: string; variant: "positive" | "ne
 };
 
 export default async function SincronizacoesPage() {
-  await requireStaffModule("sincronizacoes");
+  const user = await requireStaffModule("sincronizacoes");
 
   const [accounts, logs] = await Promise.all([
     prisma.adAccount.findMany({
@@ -36,6 +38,7 @@ export default async function SincronizacoesPage() {
         title="Sincronizações"
         description="Status de sincronização das contas e histórico de execuções"
       />
+      <PerformanceTabs items={performanceTabItems(user.role, user.modulePermissions)} active="/sincronizacoes" />
 
       <Card>
         <CardHeader><CardTitle>Contas conectadas</CardTitle></CardHeader>

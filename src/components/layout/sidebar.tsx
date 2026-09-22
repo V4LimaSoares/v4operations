@@ -141,10 +141,12 @@ export function Sidebar({
             // A group with exactly one item (Clientes, Equipes, Visão Geral) has nothing to
             // expand — rendering it as an expandable button whose single child repeats the same
             // label is a redundant extra click ("Clientes > Clientes"). Render those as a plain
-            // link instead, styled like the button it replaces.
-            if (group.items.length === 1) {
+            // link instead, styled like the button it replaces. Performance is `flatten`: it has
+            // several items, but they show up as tabs on the target page itself instead of a
+            // sidebar dropdown — link to the first one the user can actually open.
+            if (group.items.length === 1 || group.flatten) {
               const item = group.items[0];
-              const active = itemIsActive(item, pathname, search);
+              const active = groupIsActive(group, pathname, search);
               return (
                 <Link
                   key={group.label}

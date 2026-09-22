@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Wallet, Eye, MousePointerClick, Percent, TrendingUp, Target, Receipt, Ticket, Gauge } from "lucide-react";
 import { requireModule } from "@/lib/session";
+import { performanceTabItems } from "@/lib/nav";
+import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { resolveScope } from "@/lib/scope";
 import { presetToRange, getSummaryWithComparison, getDailyTimeSeries, getCampaignPerformance, getMetricsSummary } from "@/lib/data/metrics";
 import { PageHeader } from "@/components/layout/page-header";
@@ -12,7 +14,7 @@ import { DonutChart } from "@/components/dashboard/donut-chart";
 import { PlatformBadge, DataSourceBadge, StatusBadge } from "@/components/dashboard/badges";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { formatBRL, formatNumber, formatPercent } from "@/lib/utils";
+import { formatBRL, formatNumber, formatPercent, toQueryString } from "@/lib/utils";
 import type { Platform } from "@prisma/client";
 
 export default async function DashboardPage({
@@ -46,6 +48,11 @@ export default async function DashboardPage({
         title="Dashboard"
         description={scope.isAggregate ? "Visão agregada de todos os clientes" : "Performance de campanhas no período selecionado"}
         actions={<FiltersBar />}
+      />
+      <PerformanceTabs
+        items={performanceTabItems(user.role, user.modulePermissions)}
+        active="/dashboard"
+        queryString={toQueryString(params)}
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

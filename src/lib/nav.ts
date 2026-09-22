@@ -33,6 +33,10 @@ export type NavGroup = {
   label: string;
   icon: LucideIcon;
   items: NavItem[];
+  /** Render as a single flat link (to the first visible item) instead of an expandable dropdown,
+   *  even though it has several items — those items still show up, as tabs on the target page
+   *  itself (see performanceTabItems / PerformanceTabs), same pattern as Equipes/Squad. */
+  flatten?: boolean;
 };
 
 // lucide-react ships no brand marks; Search/AtSign stand in as neutral icons for Google/Meta.
@@ -43,6 +47,7 @@ export const CLIENT_NAV_GROUPS: NavGroup[] = [
   {
     label: "Performance",
     icon: Gauge,
+    flatten: true,
     items: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/google-ads", label: "Google Ads", icon: GoogleIcon },
@@ -66,6 +71,7 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
   {
     label: "Performance",
     icon: Gauge,
+    flatten: true,
     items: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/contas", label: "Contas", icon: Building2 },
@@ -152,4 +158,13 @@ export function visibleNavGroups(role: "ADMIN" | "STAFF" | "CLIENT", modulePermi
       return MODULES.some((m) => m.prefixes.some((p) => path === p) && modulePermissions.includes(m.key));
     }),
   })).filter((group) => group.items.length > 0);
+}
+
+/** The Performance subpages a given user can open, in order — same permission filtering as the
+ *  sidebar (visibleNavGroups), just pulled out for the tab bar each of those pages renders at
+ *  the top (see PerformanceTabs). CLIENT/ADMIN see the full list; STAFF only what they've been
+ *  granted. */
+export function performanceTabItems(role: "ADMIN" | "STAFF" | "CLIENT", modulePermissions: string[]): NavItem[] {
+  const groups = role === "CLIENT" ? CLIENT_NAV_GROUPS : visibleNavGroups(role, modulePermissions);
+  return groups.find((g) => g.label === "Performance")?.items ?? [];
 }

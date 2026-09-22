@@ -1,4 +1,6 @@
 import { requireModule } from "@/lib/session";
+import { performanceTabItems } from "@/lib/nav";
+import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { resolveScope } from "@/lib/scope";
 import { presetToRange } from "@/lib/data/metrics";
 import { getAdGallery, type AdSortKey } from "@/lib/data/ads";
@@ -7,6 +9,7 @@ import { AdsToolbar } from "@/components/layout/ads-toolbar";
 import { AdCard } from "@/components/dashboard/ad-card";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { toQueryString } from "@/lib/utils";
 import type { Platform } from "@prisma/client";
 
 export default async function AnunciosPage({
@@ -26,6 +29,11 @@ export default async function AnunciosPage({
   return (
     <div>
       <PageHeader title="Anúncios" description="Galeria de anúncios reais das campanhas ativas" actions={<AdsToolbar />} />
+      <PerformanceTabs
+        items={performanceTabItems(user.role, user.modulePermissions)}
+        active="/anuncios"
+        queryString={toQueryString(params)}
+      />
 
       {ads.length === 0 ? (
         <Card>

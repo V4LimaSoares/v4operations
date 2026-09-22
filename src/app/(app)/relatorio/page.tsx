@@ -1,5 +1,7 @@
 import { FileDown, Presentation, Wallet, Target, Gauge, TrendingUp } from "lucide-react";
 import { requireModule } from "@/lib/session";
+import { performanceTabItems } from "@/lib/nav";
+import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { resolveScope } from "@/lib/scope";
 import { presetToRange } from "@/lib/data/metrics";
 import { getReportData } from "@/lib/reports/data";
@@ -10,7 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { DataSourceBadge } from "@/components/dashboard/badges";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { formatBRL, formatNumber, formatDate } from "@/lib/utils";
+import { formatBRL, formatNumber, formatDate, toQueryString } from "@/lib/utils";
 
 export default async function RelatorioPage({
   searchParams,
@@ -29,6 +31,11 @@ export default async function RelatorioPage({
         title="Relatório"
         description="Gere um relatório em PDF ou uma apresentação em PPT com o padrão visual V4 Company"
         actions={<FiltersBar showPlatform={false} />}
+      />
+      <PerformanceTabs
+        items={performanceTabItems(user.role, user.modulePermissions)}
+        active="/relatorio"
+        queryString={toQueryString(params)}
       />
 
       {!scope.clientId ? (

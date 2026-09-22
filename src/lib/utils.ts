@@ -19,6 +19,13 @@ export function formatPercent(value: number, maximumFractionDigits = 2) {
   return `${value.toLocaleString("pt-BR", { maximumFractionDigits })}%`;
 }
 
+/** Rebuilds a query string from a resolved `searchParams` object, dropping empty entries — used
+ *  to carry the current filters (period/clientId/platform…) across PerformanceTabs' tab links. */
+export function toQueryString(params: Record<string, string | undefined>): string {
+  const entries = Object.entries(params).filter((e): e is [string, string] => !!e[1]);
+  return new URLSearchParams(entries).toString();
+}
+
 export function formatDate(date: Date | string) {
   const d = typeof date === "string" ? new Date(date) : date;
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });

@@ -1,4 +1,6 @@
 import { requireModule } from "@/lib/session";
+import { performanceTabItems } from "@/lib/nav";
+import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { resolveScope } from "@/lib/scope";
 import { presetToRange, getCampaignPerformance } from "@/lib/data/metrics";
 import { PageHeader } from "@/components/layout/page-header";
@@ -6,7 +8,7 @@ import { FiltersBar } from "@/components/layout/filters-bar";
 import { PlatformBadge, StatusBadge, DataSourceBadge } from "@/components/dashboard/badges";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { formatBRL, formatNumber, formatPercent } from "@/lib/utils";
+import { formatBRL, formatNumber, formatPercent, toQueryString } from "@/lib/utils";
 import type { Platform } from "@prisma/client";
 
 export default async function CampanhasPage({
@@ -28,6 +30,11 @@ export default async function CampanhasPage({
         title="Campanhas"
         description="Todas as campanhas de Google Ads e Meta Ads no período selecionado"
         actions={<FiltersBar />}
+      />
+      <PerformanceTabs
+        items={performanceTabItems(user.role, user.modulePermissions)}
+        active="/campanhas"
+        queryString={toQueryString(params)}
       />
 
       <Card>

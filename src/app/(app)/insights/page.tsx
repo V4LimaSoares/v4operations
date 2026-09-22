@@ -1,11 +1,13 @@
 import { requireModule } from "@/lib/session";
+import { performanceTabItems } from "@/lib/nav";
+import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { resolveScope } from "@/lib/scope";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/layout/page-header";
 import { GenerateInsightsButton } from "@/components/dashboard/generate-insights-button";
 import { DataSourceBadge, PlatformBadge } from "@/components/dashboard/badges";
 import { Card } from "@/components/ui/card";
-import { formatDate } from "@/lib/utils";
+import { formatDate, toQueryString } from "@/lib/utils";
 import type { InsightCategory } from "@prisma/client";
 
 const CATEGORY_META: Record<InsightCategory, { label: string; emoji: string; className: string }> = {
@@ -49,6 +51,11 @@ export default async function InsightsPage({
             : "Interpretações automáticas de performance geradas a partir dos dados de campanha"
         }
         actions={<GenerateInsightsButton />}
+      />
+      <PerformanceTabs
+        items={performanceTabItems(user.role, user.modulePermissions)}
+        active="/insights"
+        queryString={toQueryString(params)}
       />
 
       {insights.length === 0 ? (

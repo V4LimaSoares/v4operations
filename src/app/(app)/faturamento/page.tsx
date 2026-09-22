@@ -1,5 +1,7 @@
 import { Wallet, Receipt, TrendingUp, Ticket } from "lucide-react";
 import { requireModule } from "@/lib/session";
+import { performanceTabItems } from "@/lib/nav";
+import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { resolveScope } from "@/lib/scope";
 import { presetToRange, getSummaryWithComparison } from "@/lib/data/metrics";
 import { listRevenueEntries, getRevenueSeries } from "@/lib/data/revenue";
@@ -10,7 +12,7 @@ import { TimeSeriesChart } from "@/components/dashboard/time-series-chart";
 import { RevenueForm } from "@/components/dashboard/revenue-form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { formatBRL, formatDate } from "@/lib/utils";
+import { formatBRL, formatDate, toQueryString } from "@/lib/utils";
 
 export default async function FaturamentoPage({
   searchParams,
@@ -39,6 +41,11 @@ export default async function FaturamentoPage({
             {scope.clientId && <RevenueForm clientId={scope.clientId} />}
           </>
         }
+      />
+      <PerformanceTabs
+        items={performanceTabItems(user.role, user.modulePermissions)}
+        active="/faturamento"
+        queryString={toQueryString(params)}
       />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
