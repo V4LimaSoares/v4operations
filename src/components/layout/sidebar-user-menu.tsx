@@ -22,11 +22,16 @@ export function SidebarUserMenu({
   email,
   role,
   fadeClassName,
+  onRed = false,
 }: {
   name: string;
   email: string;
   role: "ADMIN" | "STAFF" | "CLIENT";
   fadeClassName: string;
+  /** The floating sidebar card is solid brand red — swaps the trigger row's colors for
+   *  white-on-red instead of the app's usual surface/foreground pair. The popover menu itself
+   *  stays themed normally; it floats over the page, not over the red card. */
+  onRed?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -48,15 +53,25 @@ export function SidebarUserMenu({
     .toUpperCase();
 
   return (
-    <div className="shrink-0 border-t border-border p-3">
+    <div className={cn("shrink-0 p-3", onRed ? "border-t border-white/15" : "border-t border-border")}>
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex w-full items-center gap-3 rounded-lg p-1.5 text-left transition-colors hover:bg-surface-2">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-primary">
+        <DropdownMenuTrigger
+          className={cn(
+            "flex w-full items-center gap-3 rounded-lg p-1.5 text-left transition-colors",
+            onRed ? "hover:bg-white/10" : "hover:bg-surface-2"
+          )}
+        >
+          <div
+            className={cn(
+              "flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
+              onRed ? "bg-white/20 text-white" : "bg-primary-soft text-primary"
+            )}
+          >
             {initials || <UserIcon className="size-3.5" />}
           </div>
           <div className={cn("min-w-0 flex-1", fadeClassName)}>
-            <div className="truncate text-sm font-medium text-foreground">{name}</div>
-            <div className="truncate text-xs text-muted-2">{email}</div>
+            <div className={cn("truncate text-sm font-medium", onRed ? "text-white" : "text-foreground")}>{name}</div>
+            <div className={cn("truncate text-xs", onRed ? "text-white/60" : "text-muted-2")}>{email}</div>
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="top" className="w-64">

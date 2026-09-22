@@ -105,13 +105,15 @@ export function Sidebar({
     >
       <div
         className={cn(
-          "absolute inset-y-0 left-0 z-30 flex w-[72px] flex-col overflow-hidden border-r border-border bg-surface/70 backdrop-blur-xl shadow-[var(--shadow-card)] transition-[width] duration-200 ease-out",
+          "absolute inset-y-3 left-3 z-30 flex w-[72px] flex-col overflow-hidden rounded-[28px] bg-gradient-to-b from-primary to-[#b20710] shadow-[0_20px_50px_-12px_rgba(229,8,21,0.45)] transition-[width] duration-200 ease-out",
           pinned ? "w-64" : "group-hover:w-64"
         )}
       >
-        <div className="flex h-16 shrink-0 items-center gap-2.5 border-b border-border px-4">
-          <Image src="/brand/v4-logo.png" alt="V4" width={28} height={28} className="shrink-0" priority />
-          <span className={cn("min-w-0 flex-1 truncate whitespace-nowrap text-sm font-semibold tracking-tight", fade)}>
+        <div className="flex h-16 shrink-0 items-center gap-2.5 px-3.5">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white shadow-[0_6px_16px_-4px_rgba(0,0,0,0.3)]">
+            <Image src="/brand/v4-logo.png" alt="V4" width={22} height={22} className="shrink-0" priority />
+          </div>
+          <span className={cn("min-w-0 flex-1 truncate whitespace-nowrap text-sm font-semibold tracking-tight text-white", fade)}>
             {appName}
           </span>
           <button
@@ -120,7 +122,7 @@ export function Sidebar({
             title={pinned ? "Soltar sidebar" : "Fixar sidebar aberto"}
             aria-pressed={pinned}
             className={cn(
-              "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-2 transition-colors hover:bg-surface-2 hover:text-foreground",
+              "flex size-6 shrink-0 items-center justify-center rounded-md text-white/70 transition-colors hover:bg-white/15 hover:text-white",
               fade
             )}
           >
@@ -128,7 +130,7 @@ export function Sidebar({
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden px-3 py-4 scrollbar-thin">
+        <nav className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden px-3 py-2 scrollbar-thin">
           {groups.map((group) => {
             const GroupIcon = group.icon;
 
@@ -145,8 +147,10 @@ export function Sidebar({
                   href={item.href}
                   title={group.label}
                   className={cn(
-                    "flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-semibold transition-colors",
-                    active ? "bg-primary-soft text-primary" : "text-foreground hover:bg-surface-2"
+                    "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-colors",
+                    active
+                      ? "border border-white/20 bg-white/16 text-white"
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
                   )}
                 >
                   <GroupIcon className="size-4.5 shrink-0" />
@@ -167,7 +171,7 @@ export function Sidebar({
                   }
                   title={group.label}
                   aria-expanded={open}
-                  className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-surface-2"
+                  className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                 >
                   <GroupIcon className="size-4.5 shrink-0" />
                   <span className={cn("min-w-0 flex-1 truncate whitespace-nowrap text-left", fade)}>
@@ -196,10 +200,10 @@ export function Sidebar({
                           href={href}
                           title={item.label}
                           className={cn(
-                            "flex items-center gap-3 rounded-lg py-2 pl-6 pr-2.5 text-sm font-medium transition-colors",
+                            "flex items-center gap-3 rounded-xl py-2 pl-6 pr-2.5 text-sm font-medium transition-colors",
                             active
-                              ? "bg-primary-soft text-primary"
-                              : "text-muted hover:bg-surface-2 hover:text-foreground"
+                              ? "border border-white/20 bg-white/16 text-white"
+                              : "text-white/65 hover:bg-white/10 hover:text-white"
                           )}
                         >
                           <Icon className="size-4 shrink-0" />
@@ -214,7 +218,7 @@ export function Sidebar({
           })}
         </nav>
 
-        <SidebarUserMenu name={user.name} email={user.email} role={role} fadeClassName={fade} />
+        <SidebarUserMenu name={user.name} email={user.email} role={role} fadeClassName={fade} onRed />
       </div>
     </aside>
   );
