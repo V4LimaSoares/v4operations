@@ -36,9 +36,14 @@ export default async function EquipesPage() {
     })
   );
 
+  // Sorted by workload (most clients first) just for this card grid — who's carrying the most
+  // is the thing a manager scans this page for; listTeamMembers() itself stays alphabetical
+  // since it also feeds picker dropdowns elsewhere, where that order is what people expect.
+  const teamByWorkload = [...team].sort((a, b) => b._count.clients - a._count.clients);
+
   return (
     <div>
-      <EquipesTabsSection team={team} squadCards={squadCards} availableUsers={availableUsers} />
+      <EquipesTabsSection team={teamByWorkload} squadCards={squadCards} availableUsers={availableUsers} />
     </div>
   );
 }
