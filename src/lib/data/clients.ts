@@ -76,6 +76,7 @@ export async function getClientById(id: string) {
       users: { select: { id: true, email: true, active: true }, where: { role: "CLIENT" } },
       teamMembers: { include: { teamMember: true }, orderBy: { teamMember: { name: "asc" } } },
       squads: { include: { squad: { select: { id: true, name: true, logoUrl: true } } } },
+      portfolioItems: { include: { item: true }, orderBy: { item: { service: "asc" } } },
     },
   });
 }

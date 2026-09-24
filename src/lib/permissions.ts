@@ -27,7 +27,8 @@ export type ModuleKey =
   | "equipes"
   | "ekyte"
   | "materiais"
-  | "financeiro";
+  | "financeiro"
+  | "portfolio";
 
 export type ModuleDef = {
   key: ModuleKey;
@@ -57,6 +58,7 @@ export const MODULES: ModuleDef[] = [
   { key: "ekyte", label: "Operação", group: "Operação", prefixes: ["/ekyte"] },
   { key: "materiais", label: "Materiais Operacionais", group: "Materiais Operacionais", prefixes: ["/materiais"] },
   { key: "financeiro", label: "Financeiro", group: "Financeiro", prefixes: ["/financeiro"] },
+  { key: "portfolio", label: "Portfólio", group: "Portfólio", prefixes: ["/portfolio"] },
 ];
 
 export const MODULE_KEYS: ModuleKey[] = MODULES.map((m) => m.key);

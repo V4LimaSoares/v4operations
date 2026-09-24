@@ -20,6 +20,7 @@ import {
   History,
   FolderOpen,
   Landmark,
+  LibraryBig,
 } from "lucide-react";
 import { MODULES } from "@/lib/permissions";
 
@@ -120,6 +121,11 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
     label: "Financeiro",
     icon: Landmark,
     items: [{ href: "/financeiro", label: "Financeiro", icon: Landmark }],
+  },
+  {
+    label: "Portfólio",
+    icon: LibraryBig,
+    items: [{ href: "/portfolio", label: "Portfólio", icon: LibraryBig }],
   },
 ];
 

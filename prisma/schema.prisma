@@ -171,6 +171,7 @@ model Client {
   teamMembers  ClientTeamMember[]
   accountNotes AccountNote[]
   squads       SquadClient[]
+  portfolioItems ClientPortfolioItem[]
 
   @@index([status])
 }
@@ -777,4 +778,47 @@ model Material {
   createdAt      DateTime @default(now())
 
   @@index([category])
+}
+
+// ---------- Portfólio (catálogo de serviços V4, vinculável a clientes) ----------
+
+enum PortfolioCategory {
+  SABER
+  TER
+  EXECUTAR
+  DESTRAVA_RECEITA
+  POTENCIALIZAR
+}
+
+model PortfolioItem {
+  id          String            @id @default(cuid())
+  category    PortfolioCategory
+  service     String
+  // Null/"—" both mean "sem variação" — the seed uses null; admins editing may still type "—".
+  variation   String?
+  // Null means "A definir" (no fixed price yet) — distinct from 0, which would mean free.
+  valueBrl    Float?
+  description String?           @db.Text
+  status      String            @default("Ativo") // Ativo | Inativo — free text, same convention as elsewhere
+  notes       String?           @db.Text
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  updatedByName String?
+
+  clients ClientPortfolioItem[]
+
+  @@index([category])
+}
+
+// A client can have more than one contracted service (an agency rarely sells just one), so this
+// is a many-to-many join rather than a single categoria/produto pair on Client itself.
+model ClientPortfolioItem {
+  clientId String
+  client   Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  itemId   String
+  item     PortfolioItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+
+  @@id([clientId, itemId])
+  @@index([itemId])
 }

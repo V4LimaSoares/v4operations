@@ -19,6 +19,8 @@ import { ClientStatusBadge, PlatformBadge, DataSourceBadge } from "@/components/
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { TeamLinkPanel } from "@/components/admin/team-link-panel";
+import { ClientPortfolioPanel } from "@/components/admin/client-portfolio-panel";
+import { listPortfolioItems } from "@/lib/data/portfolio";
 import { AccountNotesPanel } from "@/components/admin/account-notes-panel";
 import { EditClientDialog } from "@/components/admin/edit-client-dialog";
 import { HealthScoreDialog } from "@/components/admin/health-score-dialog";
@@ -39,11 +41,12 @@ function flagVariant(flag: string | null): "positive" | "warning" | "negative" |
 export default async function ClienteDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireStaffModule("clientes");
   const { id } = await params;
-  const [client, allTeam, healthEntries, accountNotes] = await Promise.all([
+  const [client, allTeam, healthEntries, accountNotes, allPortfolioItems] = await Promise.all([
     getClientById(id),
     listTeamMembers(),
     getHealthScoreEntriesByClientId(id),
     listAccountNotes(id),
+    listPortfolioItems(),
   ]);
   if (!client) notFound();
 
@@ -57,6 +60,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
 
   const linkedTeam = client.teamMembers.map((t) => ({ ...t.teamMember, role: t.role }));
   const squad = client.squads[0]?.squad ?? null;
+  const linkedPortfolio = client.portfolioItems.map((p) => p.item);
 
   return (
     <div>
@@ -82,6 +86,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
           <TabsTrigger value="account">Health Score{healthEntries.length > 0 && <Badge className="ml-1.5">{healthEntries.length}</Badge>}</TabsTrigger>
           <TabsTrigger value="operacao">Operação</TabsTrigger>
           <TabsTrigger value="equipe">Equipe{linkedTeam.length > 0 && <Badge className="ml-1.5">{linkedTeam.length}</Badge>}</TabsTrigger>
+          <TabsTrigger value="portfolio">Portfólio{linkedPortfolio.length > 0 && <Badge className="ml-1.5">{linkedPortfolio.length}</Badge>}</TabsTrigger>
           <TabsTrigger value="integracoes">Integrações{client.adAccounts.length > 0 && <Badge className="ml-1.5">{client.adAccounts.length}</Badge>}</TabsTrigger>
         </TabsList>
 
@@ -166,6 +171,12 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
           </Card>
           <Card className="p-5">
             <TeamLinkPanel clientId={client.id} linked={linkedTeam} available={allTeam} />
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="portfolio">
+          <Card className="p-5">
+            <ClientPortfolioPanel clientId={client.id} linked={linkedPortfolio} available={allPortfolioItems} />
           </Card>
         </TabsContent>
 
