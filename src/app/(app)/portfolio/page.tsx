@@ -3,6 +3,7 @@ import { listPortfolioItems, groupPortfolioByCategory } from "@/lib/data/portfol
 import { PORTFOLIO_CATEGORY_LABEL } from "@/lib/portfolio-constants";
 import { PageHeader } from "@/components/layout/page-header";
 import { PortfolioItemDialog } from "@/components/admin/portfolio-item-dialog";
+import { PortfolioSeedButton } from "@/components/admin/portfolio-seed-button";
 import { PortfolioCategoryTable } from "@/components/admin/portfolio-table";
 
 export default async function PortfolioPage() {
@@ -16,7 +17,14 @@ export default async function PortfolioPage() {
       <PageHeader
         title="Portfólio"
         description="Catálogo de serviços V4 — categoria, serviço, variação, valor base e descrição. Usado no cadastro de clientes para registrar o que cada um contratou."
-        actions={isAdmin ? <PortfolioItemDialog /> : undefined}
+        actions={
+          isAdmin ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <PortfolioSeedButton />
+              <PortfolioItemDialog />
+            </div>
+          ) : undefined
+        }
       />
 
       <div className="flex flex-col gap-8">
