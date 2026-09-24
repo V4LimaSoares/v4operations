@@ -46,6 +46,10 @@ export async function EkyteDashboardSection({ params }: { params: { period?: str
 
   return (
     <div>
+      <p className="mb-3 text-xs text-muted-2">
+        "Concluídas" e "Atrasadas" contam pela <strong>data de vencimento</strong> da tarefa, não pela data em que
+        foi finalizada — uma tarefa resolvida fora do período selecionado não entra na contagem de concluídas dele.
+      </p>
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
         <StatCard label="Tarefas no período" value={tasks.length} previousValue={prevTasks.length} icon={ListChecks} formatter={(v) => v.toFixed(0)} />
         <StatCard label="Concluídas" value={done} previousValue={prevDone} icon={CheckCircle2} formatter={(v) => v.toFixed(0)} />

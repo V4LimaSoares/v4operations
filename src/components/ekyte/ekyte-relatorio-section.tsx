@@ -66,6 +66,9 @@ export async function EkyteRelatorioSection({ params }: { params: { period?: str
             </div>
           </CardHeader>
           <CardContent>
+            <p className="mb-3 text-xs text-muted-2">
+              Contagem por data de vencimento — uma tarefa finalizada fora do período não entra em &quot;Concluídas&quot; dele.
+            </p>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               <Preview label="Tarefas" value={tasks.length.toString()} />
               <Preview label="Concluídas" value={done.toString()} tone="positive" />
