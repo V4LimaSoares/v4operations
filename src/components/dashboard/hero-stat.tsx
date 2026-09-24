@@ -21,6 +21,7 @@ export function HeroStat({
   formatter,
   invertDelta = false,
   tone = "primary",
+  className,
 }: {
   label: string;
   value: number;
@@ -29,12 +30,13 @@ export function HeroStat({
   formatter: (v: number) => string;
   invertDelta?: boolean;
   tone?: "primary" | "positive" | "info" | "warning";
+  className?: string;
 }) {
   const delta = previousValue !== undefined ? pctChange(value, previousValue) : null;
   const isGood = delta === null ? null : invertDelta ? delta < 0 : delta > 0;
 
   return (
-    <Card className="relative p-5 transition-transform hover:-translate-y-0.5">
+    <Card className={cn("relative p-5 transition-transform hover:-translate-y-0.5", className)}>
       <div className="flex items-center gap-3">
         <div className={cn("flex size-11 shrink-0 items-center justify-center rounded-xl", TONE_CLASSES[tone])}>
           <Icon className="size-5" />

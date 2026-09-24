@@ -55,11 +55,11 @@ export default async function DashboardPage({
         queryString={toQueryString(params)}
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <HeroStat label="Investimento" value={current.costBrl} previousValue={previous.costBrl} icon={Wallet} formatter={formatBRL} tone="primary" />
-        <HeroStat label="Faturamento" value={current.revenueBrl} previousValue={previous.revenueBrl} icon={Receipt} formatter={formatBRL} tone="positive" />
-        <HeroStat label="ROAS" value={current.roas} previousValue={previous.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} tone="info" />
-        <HeroStat label="Conversões" value={current.conversions} previousValue={previous.conversions} icon={Target} formatter={(v) => formatNumber(v, 1)} tone="warning" />
+      <div className="flex flex-wrap gap-4">
+        <HeroStat className="min-w-[220px] flex-1 basis-64" label="Investimento" value={current.costBrl} previousValue={previous.costBrl} icon={Wallet} formatter={formatBRL} tone="primary" />
+        <HeroStat className="min-w-[220px] flex-1 basis-64" label="Faturamento" value={current.revenueBrl} previousValue={previous.revenueBrl} icon={Receipt} formatter={formatBRL} tone="positive" />
+        <HeroStat className="min-w-[220px] flex-1 basis-64" label="ROAS" value={current.roas} previousValue={previous.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} tone="info" />
+        <HeroStat className="min-w-[220px] flex-1 basis-64" label="Conversões" value={current.conversions} previousValue={previous.conversions} icon={Target} formatter={(v) => formatNumber(v, 1)} tone="warning" />
       </div>
 
       <h2 className="mb-3 mt-6 text-xs font-semibold uppercase tracking-wide text-muted-2">Métricas detalhadas</h2>

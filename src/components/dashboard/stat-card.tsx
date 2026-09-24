@@ -34,7 +34,7 @@ export function StatCard({
         <span className="text-xs font-medium uppercase tracking-wide text-muted">{label}</span>
         {Icon && <Icon className="size-4 text-muted-2" />}
       </div>
-      <div className="mt-2 text-2xl font-semibold tabular-nums">{formatter(value)}</div>
+      <div className="mt-2 break-words text-2xl font-semibold tabular-nums">{formatter(value)}</div>
       {delta !== null && (
         <div
           className={cn(

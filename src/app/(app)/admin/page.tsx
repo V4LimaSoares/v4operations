@@ -66,11 +66,11 @@ export default async function AdminOverviewPage() {
     <div>
       <PageHeader title="Visão Geral" description="Painel administrativo da agência" />
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatCard label="Clientes ativos" value={activeClientCount} icon={Users} formatter={(v) => `${v} / ${clientCount}`} />
-        <StatCard label="Contas conectadas" value={accountCount} icon={Building2} formatter={(v) => `${v} (${googleCount} Google · ${metaCount} Meta)`} />
-        <StatCard label="Investimento total (30d)" value={summary.costBrl} icon={Wallet} formatter={formatBRL} />
-        <StatCard label="Contas com dado real" value={realCount} icon={RefreshCw} formatter={(v) => `${v} / ${accountCount} (${demoCount} demo)`} />
+      <div className="flex flex-wrap gap-4">
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="Clientes ativos" value={activeClientCount} icon={Users} formatter={(v) => `${v} / ${clientCount}`} />
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="Contas conectadas" value={accountCount} icon={Building2} formatter={(v) => `${v} (${googleCount} Google · ${metaCount} Meta)`} />
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="Investimento total (30d)" value={summary.costBrl} icon={Wallet} formatter={formatBRL} />
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="Contas com dado real" value={realCount} icon={RefreshCw} formatter={(v) => `${v} / ${accountCount} (${demoCount} demo)`} />
       </div>
 
       <div className="mt-4 flex flex-wrap gap-4">
