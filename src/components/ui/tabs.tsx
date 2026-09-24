@@ -34,10 +34,16 @@ export function Tabs({
 
 export function TabsList({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.List>) {
   return (
-    <TabsPrimitive.List
-      className={cn("inline-flex items-center gap-1 rounded-lg bg-surface-2 p-1", className)}
-      {...props}
-    />
+    // Narrow screens: a tab row with several longer labels (e.g. Financeiro's "Contas a Pagar" /
+    // "Fixo / Pró-labore") doesn't have room to keep every trigger on one line, so the label text
+    // used to wrap to two lines instead — this scrolls the row horizontally instead, same fix as
+    // PerformanceTabs.
+    <div className="max-w-full overflow-x-auto scrollbar-thin">
+      <TabsPrimitive.List
+        className={cn("inline-flex items-center gap-1 rounded-lg bg-surface-2 p-1", className)}
+        {...props}
+      />
+    </div>
   );
 }
 
@@ -45,7 +51,7 @@ export function TabsTrigger({ className, ...props }: React.ComponentProps<typeof
   return (
     <TabsPrimitive.Trigger
       className={cn(
-        "rounded-md px-3 py-1.5 text-sm font-medium text-muted transition-colors data-[state=active]:bg-surface data-[state=active]:text-foreground data-[state=active]:shadow-sm",
+        "shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium text-muted transition-colors data-[state=active]:bg-surface data-[state=active]:text-foreground data-[state=active]:shadow-sm",
         className
       )}
       {...props}
