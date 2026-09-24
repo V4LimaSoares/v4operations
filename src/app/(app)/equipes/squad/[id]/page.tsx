@@ -76,7 +76,7 @@ export default async function SquadDetailPage({ params }: { params: Promise<{ id
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <RefreshNowButton />
           <SquadDetailActions squad={{ id: squad.id, name: squad.name, logoUrl: squad.logoUrl }} />
         </div>

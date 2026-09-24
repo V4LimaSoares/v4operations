@@ -55,7 +55,7 @@ export function NotionImportButton() {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       {info && <span className="text-xs text-muted">{info}</span>}
       <Button variant="outline" onClick={() => start("dry-run")} disabled={busy}>
         {busy ? <Loader2 className="size-4 animate-spin" /> : <DownloadCloud className="size-4" />} Contar

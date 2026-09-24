@@ -47,7 +47,7 @@ export default async function EquipeDetailPage({ params }: { params: Promise<{ i
         description={member.role}
         backHref="/equipes"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <TeamAvatar id={member.id} name={member.name} colorVar={member.colorVar} photoUrl={member.photoUrl} className="size-11" />
             <TeamMemberDialog
               member={{ id: member.id, name: member.name, role: member.role, colorVar: member.colorVar, photoUrl: member.photoUrl, userId: member.userId }}

@@ -28,7 +28,7 @@ export default async function OperacaoPage({
         title="Operação"
         description={`Tarefas e produção da agência, com dados via Ekyte · atualizado em ${formatDateTime(snapshot.generatedAt)}`}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <EkyteDateFilter />
             <EkyteRefreshButton />
           </div>

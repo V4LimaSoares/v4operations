@@ -21,7 +21,7 @@ export default async function DocsIndexPage({ searchParams }: { searchParams: Pr
       <PageHeader
         title="Materiais Operacionais"
         description="Apresentações, playbooks e documentos de referência para o time"
-        actions={user.role === "ADMIN" ? <div className="flex items-center gap-3"><NotionImportButton /><NewDocButton /></div> : undefined}
+        actions={user.role === "ADMIN" ? <div className="flex flex-wrap items-center gap-3"><NotionImportButton /><NewDocButton /></div> : undefined}
       />
       <MateriaisTabs active="docs" />
 

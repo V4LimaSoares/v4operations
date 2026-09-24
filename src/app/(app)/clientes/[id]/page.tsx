@@ -65,7 +65,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
         description={client.company}
         backHref="/clientes"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <ClientStatusBadge status={client.status} />
             <RefreshNowButton />
             <EditClientDialog client={client} />
