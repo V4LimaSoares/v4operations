@@ -41,7 +41,7 @@ export function HeroStat({
         </div>
         <div className="min-w-0">
           <div className="truncate text-xs font-medium uppercase tracking-wide text-muted">{label}</div>
-          <div className="mt-0.5 text-[26px] font-bold leading-none tabular-nums">{formatter(value)}</div>
+          <div className="mt-0.5 break-words text-[26px] font-bold leading-tight tabular-nums">{formatter(value)}</div>
         </div>
       </div>
       {delta !== null && (

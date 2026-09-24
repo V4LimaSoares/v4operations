@@ -55,7 +55,7 @@ export default async function DashboardPage({
         queryString={toQueryString(params)}
       />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <HeroStat label="Investimento" value={current.costBrl} previousValue={previous.costBrl} icon={Wallet} formatter={formatBRL} tone="primary" />
         <HeroStat label="Faturamento" value={current.revenueBrl} previousValue={previous.revenueBrl} icon={Receipt} formatter={formatBRL} tone="positive" />
         <HeroStat label="ROAS" value={current.roas} previousValue={previous.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} tone="info" />
