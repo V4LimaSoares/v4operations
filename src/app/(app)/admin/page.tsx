@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { Users, Building2, Wallet, RefreshCw, AlertTriangle } from "lucide-react";
+import { Users, Building2, Wallet, RefreshCw, AlertTriangle, ShieldAlert, Siren, Receipt } from "lucide-react";
 import { requireStaffModule } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { presetToRange, getMetricsSummary } from "@/lib/data/metrics";
+import { presetToRange, getMetricsSummary, getSummaryWithComparison } from "@/lib/data/metrics";
+import { getHealthScoreAggregate } from "@/lib/data/health-score";
+import { getSlaMonitor } from "@/lib/data/sla";
 import { PageHeader } from "@/components/layout/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -14,24 +16,41 @@ export default async function AdminOverviewPage() {
   await requireStaffModule("admin_overview");
   const range = presetToRange("30d");
 
-  const [clientCount, activeClientCount, accountCount, googleCount, metaCount, demoCount, realCount, summary, recentLogs] =
-    await Promise.all([
-      prisma.client.count(),
-      prisma.client.count({ where: { status: "ACTIVE" } }),
-      prisma.adAccount.count(),
-      prisma.adAccount.count({ where: { platform: "GOOGLE_ADS" } }),
-      prisma.adAccount.count({ where: { platform: "META_ADS" } }),
-      prisma.adAccount.count({ where: { dataSource: "DEMO" } }),
-      prisma.adAccount.count({ where: { dataSource: "REAL" } }),
-      getMetricsSummary({ clientId: null, isAggregate: true }, range, "all"),
-      prisma.syncLog.findMany({
-        orderBy: { startedAt: "desc" },
-        take: 5,
-        include: { adAccount: { select: { name: true, client: { select: { name: true } } } } },
-      }),
-    ]);
+  const [
+    clientCount,
+    activeClientCount,
+    accountCount,
+    googleCount,
+    metaCount,
+    demoCount,
+    realCount,
+    summary,
+    recentLogs,
+    healthAggregate,
+    slaMonitor,
+    revenueSummary,
+  ] = await Promise.all([
+    prisma.client.count(),
+    prisma.client.count({ where: { status: "ACTIVE" } }),
+    prisma.adAccount.count(),
+    prisma.adAccount.count({ where: { platform: "GOOGLE_ADS" } }),
+    prisma.adAccount.count({ where: { platform: "META_ADS" } }),
+    prisma.adAccount.count({ where: { dataSource: "DEMO" } }),
+    prisma.adAccount.count({ where: { dataSource: "REAL" } }),
+    getMetricsSummary({ clientId: null, isAggregate: true }, range, "all"),
+    prisma.syncLog.findMany({
+      orderBy: { startedAt: "desc" },
+      take: 5,
+      include: { adAccount: { select: { name: true, client: { select: { name: true } } } } },
+    }),
+    getHealthScoreAggregate(),
+    getSlaMonitor(),
+    getSummaryWithComparison({ clientId: null, isAggregate: true }, range, "all"),
+  ]);
 
   const errorLogs = recentLogs.filter((l) => l.status === "ERROR");
+  const clientsAtRisk = healthAggregate.atRisk + healthAggregate.imminentRisk;
+  const slaAlertCount = (slaMonitor?.urgent.length ?? 0) + (slaMonitor?.attention.length ?? 0);
 
   return (
     <div>
@@ -42,6 +61,32 @@ export default async function AdminOverviewPage() {
         <StatCard label="Contas conectadas" value={accountCount} icon={Building2} formatter={(v) => `${v} (${googleCount} Google · ${metaCount} Meta)`} />
         <StatCard label="Investimento total (30d)" value={summary.costBrl} icon={Wallet} formatter={formatBRL} />
         <StatCard label="Contas com dado real" value={realCount} icon={RefreshCw} formatter={(v) => `${v} / ${accountCount} (${demoCount} demo)`} />
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3">
+        <Link href="/clientes?tab=health-score">
+          <StatCard
+            label="Clientes em risco"
+            value={clientsAtRisk}
+            icon={ShieldAlert}
+            formatter={(v) => `${v} (${healthAggregate.imminentRisk} iminente)`}
+          />
+        </Link>
+        <Link href="/controle-sla">
+          <StatCard
+            label="Alertas de SLA abertos"
+            value={slaAlertCount}
+            icon={Siren}
+            formatter={(v) => (slaMonitor ? `${v} (${slaMonitor.urgent.length} urgente)` : "Sem conexão")}
+          />
+        </Link>
+        <StatCard
+          label="Faturamento (30d)"
+          value={revenueSummary.current.revenueBrl}
+          previousValue={revenueSummary.previous.revenueBrl}
+          icon={Receipt}
+          formatter={formatBRL}
+        />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
