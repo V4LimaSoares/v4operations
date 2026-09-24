@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { Users, Building2, Wallet, RefreshCw, AlertTriangle, ShieldAlert, Siren, Receipt } from "lucide-react";
+import { Users, Building2, Wallet, RefreshCw, AlertTriangle, ShieldAlert, Siren, Receipt, Landmark, PiggyBank } from "lucide-react";
 import { requireStaffModule } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { presetToRange, getMetricsSummary, getSummaryWithComparison } from "@/lib/data/metrics";
 import { getHealthScoreAggregate } from "@/lib/data/health-score";
 import { getSlaMonitor } from "@/lib/data/sla";
+import { listRoyalties } from "@/lib/data/financeiro";
 import { PageHeader } from "@/components/layout/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -29,6 +30,7 @@ export default async function AdminOverviewPage() {
     healthAggregate,
     slaMonitor,
     revenueSummary,
+    royalties,
   ] = await Promise.all([
     prisma.client.count(),
     prisma.client.count({ where: { status: "ACTIVE" } }),
@@ -46,11 +48,19 @@ export default async function AdminOverviewPage() {
     getHealthScoreAggregate(),
     getSlaMonitor(),
     getSummaryWithComparison({ clientId: null, isAggregate: true }, range, "all"),
+    listRoyalties(),
   ]);
 
   const errorLogs = recentLogs.filter((l) => l.status === "ERROR");
   const clientsAtRisk = healthAggregate.atRisk + healthAggregate.imminentRisk;
   const slaAlertCount = (slaMonitor?.urgent.length ?? 0) + (slaMonitor?.attention.length ?? 0);
+
+  // MRR = soma do "Fee mensal" do Health Score de todos os clientes — o que entra em caixa pra
+  // Lima Soares todo mês. Royalties ativos (ex: 20% pra V4 Company) somam antes de descontar, já
+  // que mais de uma obrigação pode coexistir.
+  const mrrBrl = healthAggregate.totalFeeBrl;
+  const royaltyPct = royalties.filter((r) => r.active).reduce((sum, r) => sum + r.percentage, 0);
+  const mrrNetBrl = mrrBrl * (1 - royaltyPct / 100);
 
   return (
     <div>
@@ -63,8 +73,8 @@ export default async function AdminOverviewPage() {
         <StatCard label="Contas com dado real" value={realCount} icon={RefreshCw} formatter={(v) => `${v} / ${accountCount} (${demoCount} demo)`} />
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3">
-        <Link href="/clientes?tab=health-score">
+      <div className="mt-4 flex flex-wrap gap-4">
+        <Link href="/clientes?tab=health-score" className="min-w-[170px] flex-1 basis-56">
           <StatCard
             label="Clientes em risco"
             value={clientsAtRisk}
@@ -72,7 +82,7 @@ export default async function AdminOverviewPage() {
             formatter={(v) => `${v} (${healthAggregate.imminentRisk} iminente)`}
           />
         </Link>
-        <Link href="/controle-sla">
+        <Link href="/controle-sla" className="min-w-[170px] flex-1 basis-56">
           <StatCard
             label="Alertas de SLA abertos"
             value={slaAlertCount}
@@ -81,11 +91,20 @@ export default async function AdminOverviewPage() {
           />
         </Link>
         <StatCard
+          className="min-w-[170px] flex-1 basis-56"
           label="Faturamento (30d)"
           value={revenueSummary.current.revenueBrl}
           previousValue={revenueSummary.previous.revenueBrl}
           icon={Receipt}
           formatter={formatBRL}
+        />
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="MRR Lima Soares" value={mrrBrl} icon={Landmark} formatter={formatBRL} />
+        <StatCard
+          className="min-w-[170px] flex-1 basis-56"
+          label="MRR líquido (pós-royalties)"
+          value={mrrNetBrl}
+          icon={PiggyBank}
+          formatter={(v) => `${formatBRL(v)}${royaltyPct > 0 ? ` (-${royaltyPct.toFixed(0)}%)` : ""}`}
         />
       </div>
 
