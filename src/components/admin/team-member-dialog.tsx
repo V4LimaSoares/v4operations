@@ -24,6 +24,10 @@ export type EditableTeamMember = {
   colorVar: string;
   photoUrl?: string | null;
   userId: string | null;
+  birthDate?: Date | string | null;
+  hireDate?: Date | string | null;
+  address?: string | null;
+  email?: string | null;
 };
 export type AvailableUser = { id: string; name: string; email: string };
 
@@ -32,6 +36,11 @@ export type AvailableUser = { id: string; name: string; email: string };
 // a var() value, and we don't want to guess/resolve it just to show a swatch.
 const HEX_FALLBACK = "#6b7280";
 const isHex = (v: string) => /^#[0-9a-fA-F]{6}$/.test(v);
+
+function toISODate(d: Date | string | null | undefined): string {
+  if (!d) return "";
+  return typeof d === "string" ? d.slice(0, 10) : d.toISOString().slice(0, 10);
+}
 
 /** Edit an existing profile when `member` is given; otherwise renders "Adicionar membro" — a
  *  free-form create (nome/cargo/cor), with an optional link to an existing Administração account.
@@ -129,6 +138,10 @@ function EditMemberDialog({ member }: { member: EditableTeamMember }) {
   const [photoUrl, setPhotoUrl] = useState(member.photoUrl ?? null);
   const [photoVersion, setPhotoVersion] = useState(0);
   const [photoLoading, setPhotoLoading] = useState(false);
+  const [birthDate, setBirthDate] = useState(toISODate(member.birthDate));
+  const [hireDate, setHireDate] = useState(toISODate(member.hireDate));
+  const [address, setAddress] = useState(member.address ?? "");
+  const [email, setEmail] = useState(member.email ?? "");
   const isLinked = !!member.userId;
 
   async function onPhotoSelected(e: React.ChangeEvent<HTMLInputElement>) {
@@ -181,6 +194,10 @@ function EditMemberDialog({ member }: { member: EditableTeamMember }) {
           role,
           ...(isLinked ? {} : { name }),
           ...(colorTouched ? { colorVar: color } : {}),
+          birthDate: birthDate || null,
+          hireDate: hireDate || null,
+          address: address.trim() || null,
+          email: email.trim() || null,
         }),
       });
       if (!res.ok) {
@@ -247,6 +264,24 @@ function EditMemberDialog({ member }: { member: EditableTeamMember }) {
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="team-role">Função</Label>
             <Input id="team-role" required placeholder="Ex: Gestor de Tráfego" value={role} onChange={(e) => setRole(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="team-birth">Aniversário</Label>
+              <Input id="team-birth" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="team-hire">Contratação</Label>
+              <Input id="team-hire" type="date" value={hireDate} onChange={(e) => setHireDate(e.target.value)} />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="team-email">E-mail</Label>
+            <Input id="team-email" type="email" placeholder="pessoa@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="team-address">Endereço</Label>
+            <Input id="team-address" placeholder="Rua, número, cidade" value={address} onChange={(e) => setAddress(e.target.value)} />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label>Foto de perfil</Label>

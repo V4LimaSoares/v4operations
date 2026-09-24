@@ -31,6 +31,16 @@ export function formatDate(date: Date | string) {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+/** For calendar-date-only fields (birthDate, hireDate, terminationDate…) — those are stored as
+ *  UTC midnight and represent a date, not a moment in time, so reading them back in the server's
+ *  local timezone (formatDate above) can shift the day shown by one (e.g. "1995-05-10" saved as
+ *  UTC midnight reads back as "09 de mai" in a UTC-3 timezone). Forcing timeZone: "UTC" reads the
+ *  same Y/M/D that was saved, regardless of where the code runs. */
+export function formatDateOnly(date: Date | string) {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
+}
+
 export function formatDateTime(date: Date | string) {
   const d = typeof date === "string" ? new Date(date) : date;
   return `${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })} às ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;

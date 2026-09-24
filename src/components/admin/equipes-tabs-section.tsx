@@ -21,6 +21,10 @@ type TeamMemberRow = {
   photoUrl: string | null;
   active: boolean;
   userId: string | null;
+  birthDate: Date | string | null;
+  hireDate: Date | string | null;
+  address: string | null;
+  email: string | null;
   _count: { clients: number };
 };
 
@@ -79,7 +83,18 @@ export function EquipesTabsSection({
                 >
                   <div className="absolute right-3 top-3">
                     <TeamMemberDialog
-                      member={{ id: m.id, name: m.name, role: m.role, colorVar: m.colorVar, photoUrl: m.photoUrl, userId: m.userId }}
+                      member={{
+                        id: m.id,
+                        name: m.name,
+                        role: m.role,
+                        colorVar: m.colorVar,
+                        photoUrl: m.photoUrl,
+                        userId: m.userId,
+                        birthDate: m.birthDate,
+                        hireDate: m.hireDate,
+                        address: m.address,
+                        email: m.email,
+                      }}
                     />
                   </div>
                   <Link href={`/equipes/${m.id}`} className="block">

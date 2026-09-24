@@ -14,6 +14,11 @@ const schema = z.object({
   // legacy-linking picker in "Novo usuário" and, in principle, any future re-link flow. Never
   // used to move a profile between accounts (rejected below if it already has one).
   userId: z.string().min(1).optional(),
+  // Personal info — all optional, null clears the field.
+  birthDate: z.string().nullish(),
+  hireDate: z.string().nullish(),
+  address: z.string().nullish(),
+  email: z.string().email().nullish().or(z.literal("")),
 });
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -30,6 +35,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 
   const data: Record<string, unknown> = { ...parsed.data };
+  if ("birthDate" in parsed.data) data.birthDate = parsed.data.birthDate ? new Date(parsed.data.birthDate) : null;
+  if ("hireDate" in parsed.data) data.hireDate = parsed.data.hireDate ? new Date(parsed.data.hireDate) : null;
+  if ("email" in parsed.data) data.email = parsed.data.email || null;
   const isLinking = Boolean(parsed.data.userId);
 
   if (parsed.data.userId) {

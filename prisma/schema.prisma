@@ -214,6 +214,14 @@ model TeamMember {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Personal info — optional, filled in as HR/admin has it; not the same as User.email (that's
+  // the login, this is the person's own contact info and can differ or be absent for someone
+  // without a system login).
+  birthDate DateTime?
+  hireDate  DateTime?
+  address   String?
+  email     String?
+
   // Links this roster profile to a real Administração login, if any — optional (Equipes can
   // create a person on its own; linking to a User account is a choice, not a requirement).
   // SetNull (not Cascade) so deleting the Administração account doesn't wipe this person's

@@ -13,7 +13,8 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { ClientLinkPanel } from "@/components/admin/client-link-panel";
 import { TeamMemberDialog } from "@/components/admin/team-member-dialog";
 import { TeamAvatar } from "@/components/admin/team-avatar";
-import { Clock, Target, Users, AlertTriangle, ListChecks, CheckCircle2, Timer } from "lucide-react";
+import { Clock, Target, Users, AlertTriangle, ListChecks, CheckCircle2, Timer, Cake, CalendarCheck, Mail, MapPin } from "lucide-react";
+import { formatDateOnly } from "@/lib/utils";
 
 export default async function EquipeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireStaffModule("equipes");
@@ -50,7 +51,18 @@ export default async function EquipeDetailPage({ params }: { params: Promise<{ i
           <div className="flex flex-wrap items-center gap-2">
             <TeamAvatar id={member.id} name={member.name} colorVar={member.colorVar} photoUrl={member.photoUrl} className="size-11" />
             <TeamMemberDialog
-              member={{ id: member.id, name: member.name, role: member.role, colorVar: member.colorVar, photoUrl: member.photoUrl, userId: member.userId }}
+              member={{
+                id: member.id,
+                name: member.name,
+                role: member.role,
+                colorVar: member.colorVar,
+                photoUrl: member.photoUrl,
+                userId: member.userId,
+                birthDate: member.birthDate,
+                hireDate: member.hireDate,
+                address: member.address,
+                email: member.email,
+              }}
             />
           </div>
         }
@@ -69,6 +81,16 @@ export default async function EquipeDetailPage({ params }: { params: Promise<{ i
             <SummaryStat icon={ListChecks} label="Tarefas Ekyte (período)" value={String(ekyteTasks.length)} />
             <SummaryStat icon={CheckCircle2} label="Concluídas" value={String(ekyteDone)} />
             <SummaryStat icon={Timer} label="Horas apontadas" value={`${ekyteFmtHours(ekyteMinutes)}h`} />
+          </div>
+        </Card>
+
+        <Card className="p-5 lg:col-span-2">
+          <div className="mb-3 text-sm font-semibold">Dados pessoais</div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <PersonalField icon={Cake} label="Aniversário" value={member.birthDate ? formatDateOnly(member.birthDate) : "—"} />
+            <PersonalField icon={CalendarCheck} label="Contratação" value={member.hireDate ? formatDateOnly(member.hireDate) : "—"} />
+            <PersonalField icon={Mail} label="E-mail" value={member.email ?? "—"} />
+            <PersonalField icon={MapPin} label="Endereço" value={member.address ?? "—"} />
           </div>
         </Card>
       </div>
@@ -137,6 +159,19 @@ function SummaryStat({ icon: Icon, label, value }: { icon: typeof Users; label: 
         <Icon className="size-3.5" /> {label}
       </div>
       <div className="mt-1 text-lg font-semibold tabular-nums">{value}</div>
+    </div>
+  );
+}
+
+/** Same card treatment as SummaryStat, but for values that are text rather than a stat — an
+ *  email or address is neither short nor numeric, so no tabular-nums and no forced single line. */
+function PersonalField({ icon: Icon, label, value }: { icon: typeof Users; label: string; value: string }) {
+  return (
+    <div className="rounded-lg bg-surface-2 p-3">
+      <div className="flex items-center gap-1.5 text-xs text-muted">
+        <Icon className="size-3.5" /> {label}
+      </div>
+      <div className="mt-1 break-words text-sm font-medium">{value}</div>
     </div>
   );
 }

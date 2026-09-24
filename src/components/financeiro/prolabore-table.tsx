@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RecurringExpenseDialog, type EditableRecurringExpense } from "@/components/financeiro/recurring-expense-dialog";
-import { formatBRL, formatDate } from "@/lib/utils";
+import { formatBRL, formatDateOnly } from "@/lib/utils";
 
 export type ProlaboreRow = EditableRecurringExpense & {
   teamMember: { id: string; name: string; role: string } | null;
@@ -74,8 +74,8 @@ export function ProlaboreTable({ rows, teamMembers }: { rows: ProlaboreRow[]; te
             <TableCell className="text-right tabular-nums">{formatBRL(row.amountBrl)}</TableCell>
             <TableCell className="text-right tabular-nums">{row.percentage != null ? `${row.percentage}%` : "—"}</TableCell>
             <TableCell className="text-right tabular-nums">{row.referralPercentage != null ? `${row.referralPercentage}%` : "—"}</TableCell>
-            <TableCell>{row.hireDate ? formatDate(row.hireDate) : "—"}</TableCell>
-            {showTermination && <TableCell>{row.terminationDate ? formatDate(row.terminationDate) : "—"}</TableCell>}
+            <TableCell>{row.hireDate ? formatDateOnly(row.hireDate) : "—"}</TableCell>
+            {showTermination && <TableCell>{row.terminationDate ? formatDateOnly(row.terminationDate) : "—"}</TableCell>}
             <TableCell>
               <Badge variant={row.active ? "positive" : "outline"}>{row.active ? "Ativo" : "Inativo"}</Badge>
             </TableCell>
