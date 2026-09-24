@@ -60,7 +60,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
 
   const linkedTeam = client.teamMembers.map((t) => ({ ...t.teamMember, role: t.role }));
   const squad = client.squads[0]?.squad ?? null;
-  const linkedPortfolio = client.portfolioItems.map((p) => p.item);
+  const linkedPortfolio = client.portfolioItems.map((p) => ({ ...p.item, customValueBrl: p.customValueBrl }));
 
   return (
     <div>

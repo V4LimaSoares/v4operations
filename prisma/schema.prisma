@@ -817,6 +817,10 @@ model ClientPortfolioItem {
   client   Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
   itemId   String
   item     PortfolioItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  // Null = uses the catalog item's own valueBrl (the standard price). Set = this client
+  // negotiated a different price for this service — the catalog's base value is untouched and
+  // still applies to every other client linked to the same item.
+  customValueBrl Float?
   createdAt DateTime     @default(now())
 
   @@id([clientId, itemId])
