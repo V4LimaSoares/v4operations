@@ -269,33 +269,32 @@ export function HealthScoreDialog({
                 <Field label="Cliente" required>
                   <Input required value={form.clientName} onChange={(e) => set("clientName", e.target.value)} />
                 </Field>
-                <Field label="Produto">
-                  <div className="flex gap-1.5">
-                    <Input value={form.product ?? ""} onChange={(e) => set("product", e.target.value || null)} />
-                    {portfolioItems.length > 0 && (
-                      <Select
-                        aria-label="Selecionar produto do catálogo"
-                        className="w-9 shrink-0 px-0 text-center"
-                        value=""
-                        onChange={(e) => {
-                          const item = portfolioItems.find((i) => i.id === e.target.value);
-                          if (!item) return;
-                          set("product", item.variation ? `${item.service} — ${item.variation}` : item.service);
-                          set("productCategory", PORTFOLIO_CATEGORY_LABEL[item.category]);
-                        }}
-                      >
-                        <option value="" disabled>
-                          📋
+                {portfolioItems.length > 0 && (
+                  <Field label="Selecionar do catálogo (Portfólio)" className="col-span-2">
+                    <Select
+                      value=""
+                      onChange={(e) => {
+                        const item = portfolioItems.find((i) => i.id === e.target.value);
+                        if (!item) return;
+                        set("product", item.variation ? `${item.service} — ${item.variation}` : item.service);
+                        set("productCategory", PORTFOLIO_CATEGORY_LABEL[item.category]);
+                      }}
+                    >
+                      <option value="">Escolher categoria e produto…</option>
+                      {portfolioItems.map((i) => (
+                        <option key={i.id} value={i.id}>
+                          [{PORTFOLIO_CATEGORY_LABEL[i.category]}] {i.service}
+                          {i.variation ? ` — ${i.variation}` : ""}
                         </option>
-                        {portfolioItems.map((i) => (
-                          <option key={i.id} value={i.id}>
-                            [{PORTFOLIO_CATEGORY_LABEL[i.category]}] {i.service}
-                            {i.variation ? ` — ${i.variation}` : ""}
-                          </option>
-                        ))}
-                      </Select>
-                    )}
-                  </div>
+                      ))}
+                    </Select>
+                  </Field>
+                )}
+                <Field label="Produto">
+                  <Input value={form.product ?? ""} onChange={(e) => set("product", e.target.value || null)} />
+                </Field>
+                <Field label="Categoria do produto">
+                  <Input value={form.productCategory ?? ""} onChange={(e) => set("productCategory", e.target.value || null)} />
                 </Field>
                 <Field label="Data de início">
                   <Input type="date" value={toISODate(form.projectStart)} onChange={(e) => set("projectStart", e.target.value || null)} />
@@ -330,9 +329,6 @@ export function HealthScoreDialog({
                         </option>
                       ))}
                     </Select>
-                  </Field>
-                  <Field label="Categoria do produto">
-                    <Input value={form.productCategory ?? ""} onChange={(e) => set("productCategory", e.target.value || null)} />
                   </Field>
                   <Field label="LT (meses)">
                     <NumberInput value={form.leadTimeMonths} onChange={(v) => set("leadTimeMonths", v != null ? Math.round(v) : null)} />
@@ -837,9 +833,9 @@ function Section({ title, icon: Icon, children }: { title: string; icon?: Lucide
   );
 }
 
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function Field({ label, required, children, className }: { label: string; required?: boolean; children: React.ReactNode; className?: string }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className={cn("flex flex-col gap-1", className)}>
       <Label className="text-xs text-muted">
         {label}
         {required && <span className="text-primary"> *</span>}
