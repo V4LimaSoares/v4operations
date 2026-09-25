@@ -4,6 +4,7 @@ import { presetToRange } from "@/lib/data/metrics";
 import { listClientsWithStats } from "@/lib/data/clients";
 import { listTeamMembers } from "@/lib/data/team";
 import { listHealthScoreEntries, getHealthScoreAggregate } from "@/lib/data/health-score";
+import { listPortfolioItems } from "@/lib/data/portfolio";
 import { listClientOptions } from "@/lib/scope";
 import { PageHeader } from "@/components/layout/page-header";
 import { NewClientDialog } from "@/components/admin/new-client-dialog";
@@ -21,12 +22,13 @@ import { formatBRL, formatPercent } from "@/lib/utils";
 export default async function ClientesPage() {
   const user = await requireStaffModule("clientes");
   const range = presetToRange("30d");
-  const [clients, team, hsEntries, hsAggregate, clientOptions] = await Promise.all([
+  const [clients, team, hsEntries, hsAggregate, clientOptions, portfolioItems] = await Promise.all([
     listClientsWithStats(range),
     listTeamMembers(),
     listHealthScoreEntries(),
     getHealthScoreAggregate(),
     listClientOptions(),
+    listPortfolioItems(),
   ]);
 
   return (
@@ -64,7 +66,7 @@ export default async function ClientesPage() {
             <StatCard label="Em churn" value={hsAggregate.churn} icon={Siren} formatter={(v) => String(v)} invertDelta />
           </div>
 
-          <HealthScoreTable entries={hsEntries} clients={clientOptions} />
+          <HealthScoreTable entries={hsEntries} clients={clientOptions} portfolioItems={portfolioItems} />
         </TabsContent>
       </Tabs>
     </div>

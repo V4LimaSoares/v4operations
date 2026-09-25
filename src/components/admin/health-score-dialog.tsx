@@ -41,7 +41,11 @@ import {
 } from "@/components/ui/dialog";
 import { CHECKLIST_ITEMS } from "@/lib/health-score-checklist";
 import { EMPTY_HEALTH_SCORE_FORM_ENTRY, type HealthScoreFormEntry } from "@/lib/health-score-form";
+import { PORTFOLIO_CATEGORY_LABEL } from "@/lib/portfolio-constants";
 import { formatBRL, formatPercent, formatDate, formatDateTime, cn } from "@/lib/utils";
+import type { PortfolioCategory } from "@prisma/client";
+
+export type PortfolioOption = { id: string; category: PortfolioCategory; service: string; variation: string | null };
 
 export type { HealthScoreFormEntry } from "@/lib/health-score-form";
 export { toHealthScoreFormEntry } from "@/lib/health-score-form";
@@ -84,6 +88,7 @@ export function HealthScoreDialog({
   trigger,
   open: openProp,
   onOpenChange,
+  portfolioItems = [],
 }: {
   entry?: HealthScoreFormEntry;
   clients: { id: string; name: string; company: string }[];
@@ -95,6 +100,10 @@ export function HealthScoreDialog({
   trigger?: React.ReactNode | null;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** Catálogo de Portfólio (/portfolio) — só usado pra preencher rapidamente "Produto"/"Categoria
+   *  do produto" com um clique; esses dois campos continuam texto livre no Health Score (nunca
+   *  foram uma FK), então nada além da conveniência de preenchimento muda. */
+  portfolioItems?: PortfolioOption[];
 }) {
   const router = useRouter();
   const [openState, setOpenState] = useState(false);
@@ -261,7 +270,32 @@ export function HealthScoreDialog({
                   <Input required value={form.clientName} onChange={(e) => set("clientName", e.target.value)} />
                 </Field>
                 <Field label="Produto">
-                  <Input value={form.product ?? ""} onChange={(e) => set("product", e.target.value || null)} />
+                  <div className="flex gap-1.5">
+                    <Input value={form.product ?? ""} onChange={(e) => set("product", e.target.value || null)} />
+                    {portfolioItems.length > 0 && (
+                      <Select
+                        aria-label="Selecionar produto do catálogo"
+                        className="w-9 shrink-0 px-0 text-center"
+                        value=""
+                        onChange={(e) => {
+                          const item = portfolioItems.find((i) => i.id === e.target.value);
+                          if (!item) return;
+                          set("product", item.variation ? `${item.service} — ${item.variation}` : item.service);
+                          set("productCategory", PORTFOLIO_CATEGORY_LABEL[item.category]);
+                        }}
+                      >
+                        <option value="" disabled>
+                          📋
+                        </option>
+                        {portfolioItems.map((i) => (
+                          <option key={i.id} value={i.id}>
+                            [{PORTFOLIO_CATEGORY_LABEL[i.category]}] {i.service}
+                            {i.variation ? ` — ${i.variation}` : ""}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+                  </div>
                 </Field>
                 <Field label="Data de início">
                   <Input type="date" value={toISODate(form.projectStart)} onChange={(e) => set("projectStart", e.target.value || null)} />

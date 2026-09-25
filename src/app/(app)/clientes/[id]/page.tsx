@@ -151,7 +151,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
         </TabsContent>
 
         <TabsContent value="account">
-          <HealthTab client={client} entries={healthEntries} />
+          <HealthTab client={client} entries={healthEntries} portfolioItems={allPortfolioItems} />
           <div className="mt-6">
             <AccountNotesPanel
               clientId={client.id}
@@ -316,15 +316,17 @@ function IntegracoesTab({
 async function HealthTab({
   client,
   entries,
+  portfolioItems,
 }: {
   client: { id: string };
   entries: Awaited<ReturnType<typeof getHealthScoreEntriesByClientId>>;
+  portfolioItems: Awaited<ReturnType<typeof listPortfolioItems>>;
 }) {
   const clientOptions = await listClientOptions();
   return (
     <div>
       <div className="mb-3 flex justify-end">
-        <HealthScoreDialog clients={clientOptions} defaultClientId={client.id} />
+        <HealthScoreDialog clients={clientOptions} defaultClientId={client.id} portfolioItems={portfolioItems} />
       </div>
       {entries.length === 0 ? (
         <Card className="p-8 text-center text-sm text-muted">
@@ -340,7 +342,7 @@ async function HealthTab({
                   <Badge variant={e.phase.toLowerCase() === "churn" ? "negative" : "default"}>{e.phase}</Badge>
                   {e.flag && <Badge variant={flagVariant(e.flag)}>{e.flag}</Badge>}
                 </div>
-                <HealthScoreDialog clients={clientOptions} entry={toHealthScoreFormEntry(e)} />
+                <HealthScoreDialog clients={clientOptions} entry={toHealthScoreFormEntry(e)} portfolioItems={portfolioItems} />
               </div>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <Info label="Fee mensal" value={e.feeBrl != null ? formatBRL(e.feeBrl) : "—"} />

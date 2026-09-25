@@ -5,7 +5,7 @@ import type { HealthScoreEntry } from "@prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { HealthScoreDialog, toHealthScoreFormEntry } from "@/components/admin/health-score-dialog";
+import { HealthScoreDialog, toHealthScoreFormEntry, type PortfolioOption } from "@/components/admin/health-score-dialog";
 import { cn } from "@/lib/utils";
 
 function flagDotClass(flag: string | null) {
@@ -22,9 +22,11 @@ function flagDotClass(flag: string | null) {
 export function HealthScoreTable({
   entries,
   clients,
+  portfolioItems = [],
 }: {
   entries: HealthScoreEntry[];
   clients: { id: string; name: string; company: string }[];
+  portfolioItems?: PortfolioOption[];
 }) {
   const [selected, setSelected] = useState<HealthScoreEntry | null>(null);
 
@@ -67,6 +69,7 @@ export function HealthScoreTable({
       {selected && (
         <HealthScoreDialog
           clients={clients}
+          portfolioItems={portfolioItems}
           entry={toHealthScoreFormEntry(selected)}
           trigger={null}
           open={!!selected}
