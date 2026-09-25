@@ -1,8 +1,11 @@
 "use client";
 
+import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Select } from "@/components/ui/input";
-import { Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, RefreshCw } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const PERIOD_OPTIONS = [
   { value: "today", label: "Hoje" },
@@ -24,6 +27,14 @@ export function FiltersBar({ showPlatform = true }: { showPlatform?: boolean }) 
   const searchParams = useSearchParams();
   const period = searchParams.get("period") ?? "30d";
   const platform = searchParams.get("platform") ?? "all";
+  const [isRefreshing, startRefresh] = useTransition();
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  // Runs on mount (page load) and again whenever a refresh transition settles, so the label
+  // always reflects when the data currently on screen was actually fetched from the banco.
+  useEffect(() => {
+    if (!isRefreshing) setLastUpdated(new Date());
+  }, [isRefreshing]);
 
   function update(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -61,6 +72,22 @@ export function FiltersBar({ showPlatform = true }: { showPlatform?: boolean }) 
             </option>
           ))}
         </Select>
+      )}
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => startRefresh(() => router.refresh())}
+        disabled={isRefreshing}
+        className="gap-1.5"
+      >
+        <RefreshCw className={cn("size-3.5", isRefreshing && "animate-spin")} />
+        {isRefreshing ? "Atualizando…" : "Atualizar"}
+      </Button>
+      {lastUpdated && (
+        <span className="text-xs text-muted-2">
+          Atualizado às {lastUpdated.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+        </span>
       )}
     </div>
   );
