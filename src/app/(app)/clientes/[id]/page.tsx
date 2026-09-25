@@ -103,8 +103,15 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
         <TabsContent value="performance">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <StatCard label="Investimento" value={current.costBrl} previousValue={previous.costBrl} icon={Wallet} formatter={formatBRL} />
-            <StatCard label="Faturamento" value={current.revenueBrl} previousValue={previous.revenueBrl} icon={Receipt} formatter={formatBRL} />
-            <StatCard label="ROAS" value={current.roas} previousValue={previous.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
+            <StatCard
+              label="Faturamento real"
+              value={current.revenueEntryCount > 0 ? current.revenueBrl : null}
+              previousValue={previous.revenueEntryCount > 0 ? previous.revenueBrl : null}
+              icon={Receipt}
+              formatter={formatBRL}
+              noDataHint="Nenhum lançamento no período"
+            />
+            <StatCard label="ROAS de plataforma" value={current.roasPlatform} previousValue={previous.roasPlatform} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
             <StatCard label="Conversões" value={current.conversions} previousValue={previous.conversions} icon={Target} formatter={(v) => formatNumber(v, 1)} />
           </div>
           <div className="mt-4">
@@ -129,7 +136,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
                         <TableCell className="font-medium">{c.name}</TableCell>
                         <TableCell className="text-muted">{c.platform === "GOOGLE_ADS" ? "Google Ads" : "Meta Ads"}</TableCell>
                         <TableCell className="text-right tabular-nums">{formatBRL(c.costBrl)}</TableCell>
-                        <TableCell className="text-right tabular-nums">{c.roas.toFixed(2)}x</TableCell>
+                        <TableCell className="text-right tabular-nums">{c.roasPlatform.toFixed(2)}x</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -199,7 +206,7 @@ function OverviewTab({
   squad,
 }: {
   client: { slaGroupName: string | null; ekyteClientName: string | null };
-  current: { costBrl: number; revenueBrl: number; roas: number };
+  current: { costBrl: number; revenueBrl: number; revenueEntryCount: number; roasPlatform: number };
   healthEntries: Awaited<ReturnType<typeof getHealthScoreEntriesByClientId>>;
   linkedTeam: { id: string; name: string; colorVar: string }[];
   squad: { id: string; name: string } | null;
@@ -211,8 +218,8 @@ function OverviewTab({
         <h3 className="mb-3 text-sm font-semibold">Performance (30d)</h3>
         <div className="grid grid-cols-3 gap-4">
           <Info label="Investimento" value={formatBRL(current.costBrl)} />
-          <Info label="Faturamento" value={formatBRL(current.revenueBrl)} />
-          <Info label="ROAS" value={`${current.roas.toFixed(2)}x`} />
+          <Info label="Faturamento real" value={current.revenueEntryCount > 0 ? formatBRL(current.revenueBrl) : "—"} />
+          <Info label="ROAS de plataforma" value={`${current.roasPlatform.toFixed(2)}x`} />
         </div>
       </Card>
 

@@ -12,10 +12,13 @@ export function StatCard({
   formatter,
   invertDelta = false,
   className,
+  noDataHint,
 }: {
   label: string;
-  value: number;
-  previousValue?: number;
+  /** null = genuinely unmeasured for the period (e.g. no Faturamento cadastrado), rendered as
+   *  "—" instead of a formatted zero — see Performance audit, Fase 13. */
+  value: number | null;
+  previousValue?: number | null;
   icon?: LucideIcon;
   formatter: (v: number) => string;
   /** true for metrics where a decrease is the good direction (e.g. CPA, CPC) */
@@ -24,8 +27,11 @@ export function StatCard({
    *  instead of leaving a dangling empty cell in the last row (see Dashboard's "Métricas
    *  detalhadas"). Merged onto the default padding, not a replacement for it. */
   className?: string;
+  /** Shown under the value only when value is null — explains why there's no number instead of
+   *  leaving a bare dash. */
+  noDataHint?: string;
 }) {
-  const delta = previousValue !== undefined ? pctChange(value, previousValue) : null;
+  const delta = value !== null && previousValue != null ? pctChange(value, previousValue) : null;
   const isGood = delta === null ? null : invertDelta ? delta < 0 : delta > 0;
 
   return (
@@ -34,7 +40,10 @@ export function StatCard({
         <span className="text-xs font-medium uppercase tracking-wide text-muted">{label}</span>
         {Icon && <Icon className="size-4 text-muted-2" />}
       </div>
-      <div className="mt-2 break-words text-2xl font-semibold tabular-nums">{formatter(value)}</div>
+      <div className="mt-2 break-words text-2xl font-semibold tabular-nums">
+        {value === null ? <span className="text-muted-2">—</span> : formatter(value)}
+      </div>
+      {value === null && noDataHint && <p className="mt-1 text-xs text-muted-2">{noDataHint}</p>}
       {delta !== null && (
         <div
           className={cn(

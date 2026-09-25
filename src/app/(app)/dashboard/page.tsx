@@ -57,8 +57,35 @@ export default async function DashboardPage({
 
       <div className="flex flex-wrap gap-4">
         <HeroStat className="min-w-[220px] flex-1 basis-64" label="Investimento" value={current.costBrl} previousValue={previous.costBrl} icon={Wallet} formatter={formatBRL} tone="primary" />
-        <HeroStat className="min-w-[220px] flex-1 basis-64" label="Faturamento" value={current.revenueBrl} previousValue={previous.revenueBrl} icon={Receipt} formatter={formatBRL} tone="positive" />
-        <HeroStat className="min-w-[220px] flex-1 basis-64" label="ROAS" value={current.roas} previousValue={previous.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} tone="info" />
+        <HeroStat
+          className="min-w-[220px] flex-1 basis-64"
+          label="Faturamento real"
+          value={current.revenueEntryCount > 0 ? current.revenueBrl : null}
+          previousValue={previous.revenueEntryCount > 0 ? previous.revenueBrl : null}
+          icon={Receipt}
+          formatter={formatBRL}
+          tone="positive"
+          noDataHint="Nenhum lançamento cadastrado no período"
+        />
+        <HeroStat
+          className="min-w-[220px] flex-1 basis-64"
+          label="ROAS de plataforma"
+          value={current.roasPlatform}
+          previousValue={previous.roasPlatform}
+          icon={TrendingUp}
+          formatter={(v) => `${v.toFixed(2)}x`}
+          tone="info"
+        />
+        <HeroStat
+          className="min-w-[220px] flex-1 basis-64"
+          label="MER (receita real ÷ mídia)"
+          value={current.mer}
+          previousValue={previous.mer}
+          icon={TrendingUp}
+          formatter={(v) => `${v.toFixed(2)}x`}
+          tone="info"
+          noDataHint="Depende de Faturamento cadastrado"
+        />
         <HeroStat className="min-w-[220px] flex-1 basis-64" label="Conversões" value={current.conversions} previousValue={previous.conversions} icon={Target} formatter={(v) => formatNumber(v, 1)} tone="warning" />
       </div>
 
@@ -70,7 +97,7 @@ export default async function DashboardPage({
         <StatCard className="min-w-[170px] flex-1 basis-56" label="CPC" value={current.cpc} previousValue={previous.cpc} icon={Coins} formatter={formatBRL} invertDelta />
         <StatCard className="min-w-[170px] flex-1 basis-56" label="CPM" value={current.cpm} previousValue={previous.cpm} icon={Layers} formatter={formatBRL} invertDelta />
         <StatCard className="min-w-[170px] flex-1 basis-56" label="CPA" value={current.cpa} previousValue={previous.cpa} icon={Crosshair} formatter={formatBRL} invertDelta />
-        <StatCard className="min-w-[170px] flex-1 basis-56" label="Ticket médio" value={current.avgTicket} previousValue={previous.avgTicket} icon={Ticket} formatter={formatBRL} />
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="Ticket médio" value={current.avgTicket} previousValue={previous.avgTicket} icon={Ticket} formatter={formatBRL} noDataHint="Sem lançamento de faturamento no período" />
       </div>
 
       <h2 className="mb-3 mt-6 text-xs font-semibold uppercase tracking-wide text-muted-2">Evolução no período</h2>
@@ -126,7 +153,7 @@ export default async function DashboardPage({
                   <TableCell><StatusBadge status={c.status} /></TableCell>
                   <TableCell className="text-right tabular-nums">{formatBRL(c.costBrl)}</TableCell>
                   <TableCell className="text-right tabular-nums">{formatNumber(c.conversions, 1)}</TableCell>
-                  <TableCell className="text-right tabular-nums">{c.roas.toFixed(2)}x</TableCell>
+                  <TableCell className="text-right tabular-nums">{c.roasPlatform.toFixed(2)}x</TableCell>
                   <TableCell><DataSourceBadge dataSource={c.dataSource} /></TableCell>
                 </TableRow>
               ))}

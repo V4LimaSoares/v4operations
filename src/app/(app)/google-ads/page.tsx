@@ -45,8 +45,12 @@ export default async function GoogleAdsPage({
   const topKeywords = keywords.slice(0, 10);
   const topSearchTerms = searchTerms.slice(0, 15);
   const searchTermsPeriod = searchTerms[0];
-  const best = [...campaigns].sort((a, b) => b.roas - a.roas)[0];
-  const worst = [...campaigns].filter((c) => c.costBrl > 0).sort((a, b) => a.roas - b.roas)[0];
+  // Only worth highlighting "melhor/pior desempenho" by ROAS when at least one campaign actually
+  // has conversion value attributed — otherwise every campaign ties at 0,00x (no purchase/lead
+  // tracking configured yet) and the comparison is noise, not signal. See Performance audit.
+  const withRoasSignal = campaigns.filter((c) => c.costBrl > 0 && c.roasPlatform > 0);
+  const best = [...withRoasSignal].sort((a, b) => b.roasPlatform - a.roasPlatform)[0];
+  const worst = [...withRoasSignal].sort((a, b) => a.roasPlatform - b.roasPlatform)[0];
 
   return (
     <div>
@@ -81,8 +85,8 @@ export default async function GoogleAdsPage({
             <StatCard label="CPM" value={current.cpm} previousValue={previous.cpm} icon={Layers} formatter={formatBRL} invertDelta />
             <StatCard label="Conversões" value={current.conversions} previousValue={previous.conversions} icon={Target} formatter={(v) => formatNumber(v, 1)} />
             <StatCard label="CPA" value={current.cpa} previousValue={previous.cpa} icon={Crosshair} formatter={formatBRL} invertDelta />
-            <StatCard label="Faturamento" value={current.conversionValueBrl} previousValue={previous.conversionValueBrl} icon={TrendingUp} formatter={formatBRL} />
-            <StatCard label="ROAS" value={current.roas} previousValue={previous.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
+            <StatCard label="Valor de conversão (plataforma)" value={current.conversionValueBrl} previousValue={previous.conversionValueBrl} icon={TrendingUp} formatter={formatBRL} />
+            <StatCard label="ROAS de plataforma" value={current.roasPlatform} previousValue={previous.roasPlatform} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
           </div>
 
           {funnel ? (
@@ -110,14 +114,14 @@ export default async function GoogleAdsPage({
                 <Card className="p-5">
                   <p className="text-xs font-medium uppercase text-positive">Melhor desempenho</p>
                   <p className="mt-1 font-semibold">{best.name}</p>
-                  <p className="text-sm text-muted">ROAS {best.roas.toFixed(2)}x · {formatBRL(best.costBrl)} investidos</p>
+                  <p className="text-sm text-muted">ROAS {best.roasPlatform.toFixed(2)}x · {formatBRL(best.costBrl)} investidos</p>
                 </Card>
               )}
               {worst && (
                 <Card className="p-5">
                   <p className="text-xs font-medium uppercase text-negative">Pior desempenho</p>
                   <p className="mt-1 font-semibold">{worst.name}</p>
-                  <p className="text-sm text-muted">ROAS {worst.roas.toFixed(2)}x · {formatBRL(worst.costBrl)} investidos</p>
+                  <p className="text-sm text-muted">ROAS {worst.roasPlatform.toFixed(2)}x · {formatBRL(worst.costBrl)} investidos</p>
                 </Card>
               )}
             </div>
@@ -151,7 +155,7 @@ export default async function GoogleAdsPage({
                       <TableCell className="text-right tabular-nums">{formatNumber(c.clicks)}</TableCell>
                       <TableCell className="text-right tabular-nums">{formatPercent(c.ctr)}</TableCell>
                       <TableCell className="text-right tabular-nums">{formatNumber(c.conversions, 1)}</TableCell>
-                      <TableCell className="text-right tabular-nums">{c.roas.toFixed(2)}x</TableCell>
+                      <TableCell className="text-right tabular-nums">{c.roasPlatform.toFixed(2)}x</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

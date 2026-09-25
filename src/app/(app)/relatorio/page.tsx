@@ -95,7 +95,7 @@ async function ReportPreview({
             <StatCard label="Investimento" value={data.current.costBrl} icon={Wallet} formatter={formatBRL} />
             <StatCard label="Conversões" value={data.current.conversions} icon={Target} formatter={(v) => formatNumber(v, 1)} />
             <StatCard label="CPA" value={data.current.cpa} icon={Crosshair} formatter={formatBRL} invertDelta />
-            <StatCard label="ROAS" value={data.current.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
+            <StatCard label="ROAS de plataforma" value={data.current.roasPlatform} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
           </div>
         </CardContent>
       </Card>

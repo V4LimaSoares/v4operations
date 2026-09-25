@@ -25,8 +25,8 @@ export async function getReportData(clientId: string, range: DateRange) {
   ]);
 
   const topCampaigns = [...campaigns].sort((a, b) => b.costBrl - a.costBrl).slice(0, 6);
-  const best = [...campaigns].filter((c) => c.costBrl > 0).sort((a, b) => b.roas - a.roas)[0];
-  const worst = [...campaigns].filter((c) => c.costBrl > 0).sort((a, b) => a.roas - b.roas)[0];
+  const best = [...campaigns].filter((c) => c.costBrl > 0).sort((a, b) => b.roasPlatform - a.roasPlatform)[0];
+  const worst = [...campaigns].filter((c) => c.costBrl > 0).sort((a, b) => a.roasPlatform - b.roasPlatform)[0];
 
   const dataSource: "REAL" | "DEMO" = accounts.some((a) => a.dataSource === "REAL") ? "REAL" : "DEMO";
 

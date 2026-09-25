@@ -125,7 +125,7 @@ export function PerformanceReportDocument({ data }: { data: ReportData }) {
           <KpiCard label="CPC" value={fmtBRL(data.current.cpc)} caption="Custo por clique" bar={RED} small />
           <KpiCard label="CTR" value={fmtPct(data.current.ctr)} caption="Taxa de cliques" bar={BLACK} small />
           <KpiCard label="CPA" value={fmtBRL(data.current.cpa)} caption="Custo por conversão" bar={RED} small highlight />
-          <KpiCard label="ROAS" value={`${data.current.roas.toFixed(2)}x`} caption="Retorno sobre investimento" bar={BLACK} small />
+          <KpiCard label="ROAS" value={`${data.current.roasPlatform.toFixed(2)}x`} caption="Retorno sobre investimento" bar={BLACK} small />
         </View>
 
         <View style={styles.sectionRow}>
@@ -142,7 +142,7 @@ export function PerformanceReportDocument({ data }: { data: ReportData }) {
                 <Text style={[styles.td, { width: "40%" }]}>{c.name}</Text>
                 <Text style={[styles.td, { width: "20%" }]}>{fmtBRL(c.costBrl)}</Text>
                 <Text style={[styles.td, { width: "20%" }]}>{fmtNum(c.conversions, 1)}</Text>
-                <Text style={[styles.td, { width: "20%" }]}>{c.roas.toFixed(2)}x</Text>
+                <Text style={[styles.td, { width: "20%" }]}>{c.roasPlatform.toFixed(2)}x</Text>
               </View>
             ))}
             {data.campaigns.length === 0 && <Text style={styles.td}>Sem campanhas no período.</Text>}
@@ -166,13 +166,13 @@ export function PerformanceReportDocument({ data }: { data: ReportData }) {
               <Text style={[styles.td, { width: "34%" }]}>Google Ads</Text>
               <Text style={[styles.td, { width: "22%" }]}>{fmtBRL(data.platforms.google.costBrl)}</Text>
               <Text style={[styles.td, { width: "22%" }]}>{fmtNum(data.platforms.google.conversions, 1)}</Text>
-              <Text style={[styles.td, { width: "22%" }]}>{data.platforms.google.roas.toFixed(2)}x</Text>
+              <Text style={[styles.td, { width: "22%" }]}>{data.platforms.google.roasPlatform.toFixed(2)}x</Text>
             </View>
             <View style={styles.tableRow}>
               <Text style={[styles.td, { width: "34%" }]}>Meta Ads</Text>
               <Text style={[styles.td, { width: "22%" }]}>{fmtBRL(data.platforms.meta.costBrl)}</Text>
               <Text style={[styles.td, { width: "22%" }]}>{fmtNum(data.platforms.meta.conversions, 1)}</Text>
-              <Text style={[styles.td, { width: "22%" }]}>{data.platforms.meta.roas.toFixed(2)}x</Text>
+              <Text style={[styles.td, { width: "22%" }]}>{data.platforms.meta.roasPlatform.toFixed(2)}x</Text>
             </View>
           </View>
           <View style={styles.lightBlock}>

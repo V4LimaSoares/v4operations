@@ -74,8 +74,9 @@ export default async function MetaAdsPage({
             <StatCard label="CPM" value={current.cpm} previousValue={previous.cpm} icon={Layers} formatter={formatBRL} invertDelta />
             <StatCard label="Leads" value={current.leads} previousValue={previous.leads} icon={Target} formatter={(v) => formatNumber(v)} />
             <StatCard label="CPA" value={current.cpa} previousValue={previous.cpa} icon={Crosshair} formatter={formatBRL} invertDelta />
-            <StatCard label="Faturamento" value={current.conversionValueBrl} previousValue={previous.conversionValueBrl} icon={TrendingUp} formatter={formatBRL} />
-            <StatCard label="ROAS" value={current.roas} previousValue={previous.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
+            <StatCard label="Valor de conversão (plataforma)" value={current.conversionValueBrl} previousValue={previous.conversionValueBrl} icon={TrendingUp} formatter={formatBRL} />
+            <StatCard label="ROAS de plataforma" value={current.roasPlatform} previousValue={previous.roasPlatform} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
+            <StatCard label="Custo por lead" value={current.leads > 0 ? current.costPerLead : null} previousValue={previous.leads > 0 ? previous.costPerLead : null} icon={Crosshair} formatter={formatBRL} invertDelta noDataHint="Sem leads no período" />
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -109,7 +110,7 @@ export default async function MetaAdsPage({
                       <TableCell className="text-right tabular-nums">{formatNumber(c.clicks)}</TableCell>
                       <TableCell className="text-right tabular-nums">{formatPercent(c.ctr)}</TableCell>
                       <TableCell className="text-right tabular-nums">{formatNumber(c.conversions, 1)}</TableCell>
-                      <TableCell className="text-right tabular-nums">{c.roas.toFixed(2)}x</TableCell>
+                      <TableCell className="text-right tabular-nums">{c.roasPlatform.toFixed(2)}x</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

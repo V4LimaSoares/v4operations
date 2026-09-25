@@ -23,13 +23,16 @@ export function buildNarrative(data: ReportData) {
         : `O custo por conversão caiu ${Math.abs(cpaChange).toFixed(0)}%, uma evolução saudável de eficiência.`
     );
   }
-  if (current.roas > 0) {
-    leituraExecutiva.push(`O ROAS do período foi de ${current.roas.toFixed(2)}x.`);
+  if (current.roasPlatform > 0) {
+    leituraExecutiva.push(`O ROAS de plataforma do período foi de ${current.roasPlatform.toFixed(2)}x.`);
+  }
+  if (current.mer !== null) {
+    leituraExecutiva.push(`Considerando o faturamento real cadastrado, o MER (receita real ÷ mídia) foi de ${current.mer.toFixed(2)}x.`);
   }
 
   const destaques: string[] = [];
-  if (best) destaques.push(`A campanha "${best.name}" lidera o ROAS do período, com ${best.roas.toFixed(2)}x de retorno.`);
-  if (worst && worst.id !== best?.id) destaques.push(`"${worst.name}" tem o menor ROAS (${worst.roas.toFixed(2)}x) — candidata a revisão.`);
+  if (best) destaques.push(`A campanha "${best.name}" lidera o ROAS do período, com ${best.roasPlatform.toFixed(2)}x de retorno.`);
+  if (worst && worst.id !== best?.id) destaques.push(`"${worst.name}" tem o menor ROAS (${worst.roasPlatform.toFixed(2)}x) — candidata a revisão.`);
   destaques.push(`CTR médio de ${current.ctr.toFixed(2)}% e CPC médio de ${formatBRL(current.cpc)} no período.`);
   if (data.platforms.google.costBrl > 0 && data.platforms.meta.costBrl > 0) {
     const total = data.platforms.google.costBrl + data.platforms.meta.costBrl;

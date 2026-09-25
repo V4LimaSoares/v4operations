@@ -57,17 +57,35 @@ export type MetricsSummary = {
   costBrl: number;
   conversions: number;
   conversionValueBrl: number;
+  /** Real business revenue (RevenueEntry) for the period — 0 when nothing was cadastrado, same as
+   *  before. Kept separate from conversionValueBrl on purpose (see roasPlatform/mer below); never
+   *  silently substituted for the other anymore. */
   revenueBrl: number;
+  /** How many RevenueEntry rows made up revenueBrl — lets avgTicket divide by actual lançamentos
+   *  instead of ad-platform "conversions" (see Performance audit, Fase 5). */
+  revenueEntryCount: number;
   ctr: number;
   cpc: number;
   cpm: number;
   cpa: number;
-  roas: number;
-  avgTicket: number;
+  /** Platform-attributed ROAS: conversionValueBrl / costBrl. What Google/Meta themselves are
+   *  claiming credit for — always computable, never depends on Faturamento being cadastrado. */
+  roasPlatform: number;
+  /** Blended ROAS / MER: real revenueBrl / costBrl. Null (not 0) when no RevenueEntry exists for
+   *  the period — "sem dado", not "zero resultado". Callers must handle the null case explicitly
+   *  instead of defaulting to 0, which would read as a real (bad) number. */
+  mer: number | null;
+  /** Ticket médio sobre lançamentos reais de faturamento — null quando não há lançamento no
+   *  período (evita dividir receita real por "conversões" de mídia, que podem ser lead, clique
+   *  qualificado etc., não necessariamente uma venda). */
+  avgTicket: number | null;
   reach: number;
   frequency: number;
   leads: number;
   costPerLead: number;
+  /** True when at least one Metric row exists for this scope/period — lets the UI show "sem
+   *  dado" instead of R$ 0,00/0.00x when a KPI is genuinely unmeasured rather than zero. */
+  hasData: boolean;
 };
 
 function deriveSummary(raw: {
@@ -77,11 +95,14 @@ function deriveSummary(raw: {
   conversions: number;
   conversionValueBrl: number;
   revenueBrl?: number;
+  revenueEntryCount?: number;
   reach?: number;
   leads?: number;
+  hasData?: boolean;
 }): MetricsSummary {
   const { impressions, clicks, costBrl, conversions, conversionValueBrl } = raw;
-  const revenueBrl = raw.revenueBrl ?? conversionValueBrl;
+  const revenueBrl = raw.revenueBrl ?? 0;
+  const revenueEntryCount = raw.revenueEntryCount ?? 0;
   const reach = raw.reach ?? 0;
   const leads = raw.leads ?? 0;
   return {
@@ -91,16 +112,19 @@ function deriveSummary(raw: {
     conversions,
     conversionValueBrl,
     revenueBrl,
+    revenueEntryCount,
     reach,
     leads,
     ctr: impressions > 0 ? (clicks / impressions) * 100 : 0,
     cpc: clicks > 0 ? costBrl / clicks : 0,
     cpm: impressions > 0 ? (costBrl / impressions) * 1000 : 0,
     cpa: conversions > 0 ? costBrl / conversions : 0,
-    roas: costBrl > 0 ? revenueBrl / costBrl : 0,
-    avgTicket: conversions > 0 ? revenueBrl / conversions : 0,
+    roasPlatform: costBrl > 0 ? conversionValueBrl / costBrl : 0,
+    mer: revenueEntryCount > 0 && costBrl > 0 ? revenueBrl / costBrl : null,
+    avgTicket: revenueEntryCount > 0 ? revenueBrl / revenueEntryCount : null,
     frequency: reach > 0 ? impressions / reach : 0,
     costPerLead: leads > 0 ? costBrl / leads : 0,
+    hasData: raw.hasData ?? true,
   };
 }
 
@@ -111,6 +135,7 @@ export async function getMetricsSummary(
 ): Promise<MetricsSummary> {
   const agg = await prisma.metric.aggregate({
     where: metricWhere(scope, range, platform),
+    _count: { _all: true },
     _sum: {
       impressions: true,
       clicks: true,
@@ -128,8 +153,8 @@ export async function getMetricsSummary(
       date: { gte: range.start, lte: range.end },
     },
     _sum: { amountBrl: true },
+    _count: { _all: true },
   });
-  const revenueBrl = rev._sum.amountBrl ? Number(rev._sum.amountBrl) : undefined;
 
   return deriveSummary({
     impressions: agg._sum.impressions ?? 0,
@@ -139,7 +164,9 @@ export async function getMetricsSummary(
     conversionValueBrl: Number(agg._sum.conversionValueBrl ?? 0),
     reach: agg._sum.reach ?? 0,
     leads: agg._sum.leads ?? 0,
-    revenueBrl,
+    revenueBrl: rev._sum.amountBrl ? Number(rev._sum.amountBrl) : 0,
+    revenueEntryCount: rev._count._all,
+    hasData: agg._count._all > 0,
   });
 }
 

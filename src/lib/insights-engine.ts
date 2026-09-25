@@ -101,12 +101,12 @@ export async function generateInsightsForClient(clientId: string) {
       });
     }
 
-    if (current.roas >= 4 && current.costBrl > 0) {
+    if (current.roasPlatform >= 4 && current.costBrl > 0) {
       drafts.push({
         category: "HIGHLIGHT",
         platform,
-        title: `${label} com ROAS acima de 4x`,
-        description: `${label} entregou ROAS de ${current.roas.toFixed(1)}x nos últimos 7 dias — bem acima da média de 2-3x considerada saudável para a maioria dos negócios.`,
+        title: `${label} com ROAS de plataforma acima de 4x`,
+        description: `${label} entregou ROAS de plataforma de ${current.roasPlatform.toFixed(1)}x nos últimos 7 dias — bem acima da média de 2-3x considerada saudável para a maioria dos negócios. Isto é o valor de conversão que o próprio ${label} atribui às campanhas, não necessariamente o faturamento real do negócio.`,
       });
     }
   }
@@ -115,13 +115,13 @@ export async function generateInsightsForClient(clientId: string) {
   const campaigns = await getCampaignPerformance({ clientId, isAggregate: false }, range, "all");
   const withSpend = campaigns.filter((c) => c.costBrl > 0);
   if (withSpend.length > 0) {
-    const best = [...withSpend].sort((a, b) => b.roas - a.roas)[0];
-    if (best.roas > 0) {
+    const best = [...withSpend].sort((a, b) => b.roasPlatform - a.roasPlatform)[0];
+    if (best.roasPlatform > 0) {
       drafts.push({
         category: "HIGHLIGHT",
         platform: best.platform,
         title: `Campanha "${best.name}" lidera o ROAS`,
-        description: `A campanha "${best.name}" (${PLATFORM_LABEL[best.platform]}) possui o melhor ROAS do período, com retorno de ${best.roas.toFixed(1)}x sobre o investimento.`,
+        description: `A campanha "${best.name}" (${PLATFORM_LABEL[best.platform]}) possui o melhor ROAS de plataforma do período, com retorno de ${best.roasPlatform.toFixed(1)}x sobre o investimento.`,
       });
     }
 

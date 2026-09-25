@@ -48,12 +48,44 @@ export default async function FaturamentoPage({
         queryString={toQueryString(params)}
       />
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
         <StatCard label="Investimento em mídia" value={current.costBrl} previousValue={previous.costBrl} icon={Wallet} formatter={formatBRL} />
-        <StatCard label="Faturamento" value={current.revenueBrl} previousValue={previous.revenueBrl} icon={Receipt} formatter={formatBRL} />
-        <StatCard label="ROAS" value={current.roas} previousValue={previous.roas} icon={TrendingUp} formatter={(v) => `${v.toFixed(2)}x`} />
-        <StatCard label="Ticket médio" value={current.avgTicket} previousValue={previous.avgTicket} icon={Ticket} formatter={formatBRL} />
+        <StatCard
+          label="Faturamento real"
+          value={current.revenueEntryCount > 0 ? current.revenueBrl : null}
+          previousValue={previous.revenueEntryCount > 0 ? previous.revenueBrl : null}
+          icon={Receipt}
+          formatter={formatBRL}
+          noDataHint="Nenhum lançamento no período"
+        />
+        <StatCard
+          label="ROAS de plataforma"
+          value={current.roasPlatform}
+          previousValue={previous.roasPlatform}
+          icon={TrendingUp}
+          formatter={(v) => `${v.toFixed(2)}x`}
+        />
+        <StatCard
+          label="MER (blended ROAS)"
+          value={current.mer}
+          previousValue={previous.mer}
+          icon={TrendingUp}
+          formatter={(v) => `${v.toFixed(2)}x`}
+          noDataHint="Depende de Faturamento cadastrado"
+        />
+        <StatCard
+          label="Ticket médio"
+          value={current.avgTicket}
+          previousValue={previous.avgTicket}
+          icon={Ticket}
+          formatter={formatBRL}
+          noDataHint="Sem lançamento no período"
+        />
       </div>
+      <p className="mt-3 text-xs text-muted">
+        <strong className="font-medium text-foreground">ROAS de plataforma</strong> = valor de conversão que o próprio Google/Meta atribui às campanhas ÷ investimento.{" "}
+        <strong className="font-medium text-foreground">MER</strong> = faturamento real cadastrado abaixo ÷ investimento — reflete o negócio todo, não só o que a mídia consegue rastrear.
+      </p>
 
       <div className="mt-6">
         <TimeSeriesChart title="Faturamento registrado ao longo do tempo" data={series} metricKey="amountBrl" format="brl" color="var(--color-positive)" />

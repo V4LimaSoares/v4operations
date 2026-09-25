@@ -78,7 +78,7 @@ export default async function CampanhasPage({
                   <TableCell className="text-right tabular-nums">{formatBRL(c.cpc)}</TableCell>
                   <TableCell className="text-right tabular-nums">{formatNumber(c.conversions, 1)}</TableCell>
                   <TableCell className="text-right tabular-nums">{formatBRL(c.cpa)}</TableCell>
-                  <TableCell className="text-right tabular-nums">{c.roas.toFixed(2)}x</TableCell>
+                  <TableCell className="text-right tabular-nums">{c.roasPlatform.toFixed(2)}x</TableCell>
                   <TableCell><DataSourceBadge dataSource={c.dataSource} /></TableCell>
                 </TableRow>
               ))}

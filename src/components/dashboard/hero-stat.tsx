@@ -22,17 +22,20 @@ export function HeroStat({
   invertDelta = false,
   tone = "primary",
   className,
+  noDataHint,
 }: {
   label: string;
-  value: number;
-  previousValue?: number;
+  /** null = genuinely unmeasured for the period, rendered as "—" instead of a formatted zero. */
+  value: number | null;
+  previousValue?: number | null;
   icon: LucideIcon;
   formatter: (v: number) => string;
   invertDelta?: boolean;
   tone?: "primary" | "positive" | "info" | "warning";
   className?: string;
+  noDataHint?: string;
 }) {
-  const delta = previousValue !== undefined ? pctChange(value, previousValue) : null;
+  const delta = value !== null && previousValue != null ? pctChange(value, previousValue) : null;
   const isGood = delta === null ? null : invertDelta ? delta < 0 : delta > 0;
 
   return (
@@ -43,7 +46,10 @@ export function HeroStat({
         </div>
         <div className="min-w-0">
           <div className="truncate text-xs font-medium uppercase tracking-wide text-muted">{label}</div>
-          <div className="mt-0.5 break-words text-[26px] font-bold leading-tight tabular-nums">{formatter(value)}</div>
+          <div className="mt-0.5 break-words text-[26px] font-bold leading-tight tabular-nums">
+            {value === null ? <span className="text-muted-2">—</span> : formatter(value)}
+          </div>
+          {value === null && noDataHint && <p className="mt-0.5 text-xs text-muted-2">{noDataHint}</p>}
         </div>
       </div>
       {delta !== null && (

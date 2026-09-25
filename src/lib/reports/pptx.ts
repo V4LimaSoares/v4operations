@@ -58,7 +58,7 @@ export async function buildReportPptx(data: ReportData): Promise<Buffer> {
     { label: "CPC", value: fmtBRL(data.current.cpc) },
     { label: "CTR", value: `${data.current.ctr.toFixed(2)}%` },
     { label: "CPA", value: fmtBRL(data.current.cpa), highlight: true },
-    { label: "ROAS", value: `${data.current.roas.toFixed(2)}x` },
+    { label: "ROAS", value: `${data.current.roasPlatform.toFixed(2)}x` },
   ];
   const cols = 4;
   const cardW = 2.9;
@@ -98,7 +98,7 @@ export async function buildReportPptx(data: ReportData): Promise<Buffer> {
       { text: c.platform === "GOOGLE_ADS" ? "Google Ads" : "Meta Ads" },
       { text: fmtBRL(c.costBrl) },
       { text: fmtNum(c.conversions, 1) },
-      { text: `${c.roas.toFixed(2)}x`, options: { color: RED, bold: true } },
+      { text: `${c.roasPlatform.toFixed(2)}x`, options: { color: RED, bold: true } },
     ]),
   ];
   campSlide.addTable(tableRows, {
@@ -118,8 +118,8 @@ export async function buildReportPptx(data: ReportData): Promise<Buffer> {
         { text: "Investimento", options: { bold: true, color: WHITE, fill: { color: BLACK } } },
         { text: "ROAS", options: { bold: true, color: WHITE, fill: { color: BLACK } } },
       ],
-      [{ text: "Google Ads" }, { text: fmtBRL(data.platforms.google.costBrl) }, { text: `${data.platforms.google.roas.toFixed(2)}x` }],
-      [{ text: "Meta Ads" }, { text: fmtBRL(data.platforms.meta.costBrl) }, { text: `${data.platforms.meta.roas.toFixed(2)}x` }],
+      [{ text: "Google Ads" }, { text: fmtBRL(data.platforms.google.costBrl) }, { text: `${data.platforms.google.roasPlatform.toFixed(2)}x` }],
+      [{ text: "Meta Ads" }, { text: fmtBRL(data.platforms.meta.costBrl) }, { text: `${data.platforms.meta.roasPlatform.toFixed(2)}x` }],
     ],
     { x: 0.6, y: 1.4, w: 5.8, h: 1.8, fontSize: 12, border: { type: "solid", color: "E5E5E5", pt: 0.5 } }
   );
