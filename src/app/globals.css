@@ -32,8 +32,10 @@
   --negative-soft: #fdecec;
   --warning: #d97706;
   --warning-soft: #fdf3e3;
-  --info: #2563eb;
-  --info-soft: #eaf1fe;
+  /* "Info" reuses the warm red/orange palette instead of blue — see brand guidelines note above;
+     kept a shade apart from --warning (amber) so the two don't read as the same accent. */
+  --info: #c2410c;
+  --info-soft: #fdece0;
 
   /* Secondary chart accents — brand yellow + a complementary orange, used across chart
      visualizations so no two charts on the same screen share a color. */
@@ -42,13 +44,16 @@
   --chart-yellow: #ffc02a;
   --chart-yellow-soft: #fef8e6;
 
-  --google: #4285f4;
-  --meta: #0866ff;
+  /* Google/Meta badge colors — no blue anywhere in this app, including brand marks, so these are
+     red/orange rather than each platform's actual brand color (mirrors the pairing the dashboard
+     donut chart already used: Google = red, Meta = orange). */
+  --google: #dc2626;
+  --meta: #ff7a1a;
 
   /* Per-teammate accent colors for Controle de SLA's Equipes charts/avatars — one distinct hue
      per person so nothing on the same screen is ambiguous about whose data it is. */
   --c-monica: #b20710;
-  --c-camila: #2563eb;
+  --c-camila: #7c3aed;
   --c-pedro: #b8460c;
   --c-rafael: #0a7a54;
 
@@ -91,8 +96,8 @@
     --negative-soft: #2a1616;
     --warning: #fbbf24;
     --warning-soft: #2b230f;
-    --info: #60a5fa;
-    --info-soft: #142238;
+    --info: #fb923c;
+    --info-soft: #2b1c0d;
 
     --chart-orange: #ff8a3d;
     --chart-orange-soft: #2b1a0d;
@@ -100,7 +105,7 @@
     --chart-yellow-soft: #2b2410;
 
     --c-monica: #e50914;
-    --c-camila: #3b82f6;
+    --c-camila: #a78bfa;
     --c-pedro: #c85a17;
     --c-rafael: #0d9c6e;
 
@@ -139,8 +144,8 @@
   --negative-soft: #2a1616;
   --warning: #fbbf24;
   --warning-soft: #2b230f;
-  --info: #60a5fa;
-  --info-soft: #142238;
+  --info: #fb923c;
+  --info-soft: #2b1c0d;
 
   --chart-orange: #ff8a3d;
   --chart-orange-soft: #2b1a0d;
@@ -148,7 +153,7 @@
   --chart-yellow-soft: #2b2410;
 
   --c-monica: #e50914;
-  --c-camila: #3b82f6;
+  --c-camila: #a78bfa;
   --c-pedro: #c85a17;
   --c-rafael: #0d9c6e;
 
