@@ -4,6 +4,27 @@ import { requireStaffModule } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit";
 
+// Lookup by (platform, externalId) — lets an MCP-assisted session resolve the internal AdAccount
+// id it needs for /api/admin/metrics/import without needing direct database access.
+export async function GET(req: Request) {
+  await requireStaffModule("contas");
+  const { searchParams } = new URL(req.url);
+  const platform = searchParams.get("platform");
+  const externalId = searchParams.get("externalId");
+  if (!platform || !externalId) {
+    return NextResponse.json({ error: "platform e externalId obrigatórios." }, { status: 400 });
+  }
+  if (platform !== "GOOGLE_ADS" && platform !== "META_ADS") {
+    return NextResponse.json({ error: "platform inválido." }, { status: 400 });
+  }
+  const account = await prisma.adAccount.findUnique({
+    where: { platform_externalId: { platform, externalId } },
+    select: { id: true, name: true, clientId: true, dataSource: true },
+  });
+  if (!account) return NextResponse.json({ error: "Conta não encontrada." }, { status: 404 });
+  return NextResponse.json({ account });
+}
+
 const schema = z.object({
   clientId: z.string().min(1),
   platform: z.enum(["GOOGLE_ADS", "META_ADS"]),
