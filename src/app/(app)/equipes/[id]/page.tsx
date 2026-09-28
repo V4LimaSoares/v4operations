@@ -13,7 +13,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { ClientLinkPanel } from "@/components/admin/client-link-panel";
 import { TeamMemberDialog } from "@/components/admin/team-member-dialog";
 import { TeamAvatar } from "@/components/admin/team-avatar";
-import { Clock, Target, Users, AlertTriangle, ListChecks, CheckCircle2, Timer, Cake, CalendarCheck, Mail, MapPin } from "lucide-react";
+import { Clock, Target, Users, AlertTriangle, ListChecks, CheckCircle2, Timer, Cake, CalendarCheck, Mail, MapPin, Phone } from "lucide-react";
 import { formatDateOnly } from "@/lib/utils";
 
 export default async function EquipeDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -62,6 +62,7 @@ export default async function EquipeDetailPage({ params }: { params: Promise<{ i
                 hireDate: member.hireDate,
                 address: member.address,
                 email: member.email,
+                phone: member.phone,
               }}
             />
           </div>
@@ -90,6 +91,7 @@ export default async function EquipeDetailPage({ params }: { params: Promise<{ i
             <PersonalField icon={Cake} label="Aniversário" value={member.birthDate ? formatDateOnly(member.birthDate) : "—"} />
             <PersonalField icon={CalendarCheck} label="Contratação" value={member.hireDate ? formatDateOnly(member.hireDate) : "—"} />
             <PersonalField icon={Mail} label="E-mail" value={member.email ?? "—"} />
+            <PersonalField icon={Phone} label="Telefone" value={member.phone ?? "—"} />
             <PersonalField icon={MapPin} label="Endereço" value={member.address ?? "—"} />
           </div>
         </Card>

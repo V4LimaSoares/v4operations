@@ -28,6 +28,7 @@ export type EditableTeamMember = {
   hireDate?: Date | string | null;
   address?: string | null;
   email?: string | null;
+  phone?: string | null;
 };
 export type AvailableUser = { id: string; name: string; email: string };
 
@@ -57,6 +58,22 @@ function AddMemberDialog({ availableUsers }: { availableUsers: AvailableUser[] }
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [userId, setUserId] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [hireDate, setHireDate] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+
+  function reset() {
+    setName("");
+    setRole("");
+    setUserId("");
+    setBirthDate("");
+    setHireDate("");
+    setEmail("");
+    setPhone("");
+    setAddress("");
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -65,7 +82,16 @@ function AddMemberDialog({ availableUsers }: { availableUsers: AvailableUser[] }
       const res = await fetch("/api/admin/team", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, role: role || "Equipe", userId: userId || null }),
+        body: JSON.stringify({
+          name,
+          role: role || "Equipe",
+          userId: userId || null,
+          birthDate: birthDate || null,
+          hireDate: hireDate || null,
+          email: email.trim() || null,
+          phone: phone.trim() || null,
+          address: address.trim() || null,
+        }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -74,9 +100,7 @@ function AddMemberDialog({ availableUsers }: { availableUsers: AvailableUser[] }
       }
       toast.success("Pessoa adicionada à equipe.");
       setOpen(false);
-      setName("");
-      setRole("");
-      setUserId("");
+      reset();
       router.refresh();
     } finally {
       setLoading(false);
@@ -115,6 +139,30 @@ function AddMemberDialog({ availableUsers }: { availableUsers: AvailableUser[] }
               ))}
             </Select>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="new-team-birth">Aniversário</Label>
+              <Input id="new-team-birth" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="new-team-hire">Contratação</Label>
+              <Input id="new-team-hire" type="date" value={hireDate} onChange={(e) => setHireDate(e.target.value)} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="new-team-email">E-mail pessoal</Label>
+              <Input id="new-team-email" type="email" placeholder="pessoa@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="new-team-phone">Telefone</Label>
+              <Input id="new-team-phone" type="tel" placeholder="(00) 00000-0000" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="new-team-address">Endereço</Label>
+            <Input id="new-team-address" placeholder="Rua, número, cidade" value={address} onChange={(e) => setAddress(e.target.value)} />
+          </div>
           <DialogFooter>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="size-4 animate-spin" />}
@@ -142,6 +190,7 @@ function EditMemberDialog({ member }: { member: EditableTeamMember }) {
   const [hireDate, setHireDate] = useState(toISODate(member.hireDate));
   const [address, setAddress] = useState(member.address ?? "");
   const [email, setEmail] = useState(member.email ?? "");
+  const [phone, setPhone] = useState(member.phone ?? "");
   const isLinked = !!member.userId;
 
   async function onPhotoSelected(e: React.ChangeEvent<HTMLInputElement>) {
@@ -198,6 +247,7 @@ function EditMemberDialog({ member }: { member: EditableTeamMember }) {
           hireDate: hireDate || null,
           address: address.trim() || null,
           email: email.trim() || null,
+          phone: phone.trim() || null,
         }),
       });
       if (!res.ok) {
@@ -275,9 +325,15 @@ function EditMemberDialog({ member }: { member: EditableTeamMember }) {
               <Input id="team-hire" type="date" value={hireDate} onChange={(e) => setHireDate(e.target.value)} />
             </div>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="team-email">E-mail</Label>
-            <Input id="team-email" type="email" placeholder="pessoa@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="team-email">E-mail pessoal</Label>
+              <Input id="team-email" type="email" placeholder="pessoa@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="team-phone">Telefone</Label>
+              <Input id="team-phone" type="tel" placeholder="(00) 00000-0000" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            </div>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="team-address">Endereço</Label>

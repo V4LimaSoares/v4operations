@@ -16,6 +16,12 @@ const schema = z.object({
   // Optional — links this new profile to an existing Administração account (must not already
   // have one). Equipes can create a person on its own now; linking is a choice, not a requirement.
   userId: z.string().min(1).nullish(),
+  // Personal info — same optional fields available on edit, filled in at creation time too.
+  birthDate: z.string().nullish(),
+  hireDate: z.string().nullish(),
+  address: z.string().nullish(),
+  email: z.string().email().nullish().or(z.literal("")),
+  phone: z.string().nullish(),
 });
 
 export async function POST(req: Request) {
@@ -25,7 +31,8 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dados inválidos." }, { status: 400 });
   }
-  const { name, role, colorVar, userId } = parsed.data;
+  const { name, role, colorVar, userId, birthDate, hireDate, address, phone } = parsed.data;
+  const email = parsed.data.email || null;
 
   let linkedUser: { id: string; name: string } | null = null;
   if (userId) {
@@ -47,6 +54,11 @@ export async function POST(req: Request) {
       role,
       colorVar: colorVar || NEW_MEMBER_PALETTE[count % NEW_MEMBER_PALETTE.length],
       userId: linkedUser?.id ?? null,
+      birthDate: birthDate ? new Date(birthDate) : null,
+      hireDate: hireDate ? new Date(hireDate) : null,
+      address: address || null,
+      email,
+      phone: phone || null,
     },
   });
 

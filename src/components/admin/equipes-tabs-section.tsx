@@ -25,6 +25,7 @@ type TeamMemberRow = {
   hireDate: Date | string | null;
   address: string | null;
   email: string | null;
+  phone: string | null;
   _count: { clients: number };
 };
 
@@ -94,6 +95,7 @@ export function EquipesTabsSection({
                         hireDate: m.hireDate,
                         address: m.address,
                         email: m.email,
+                        phone: m.phone,
                       }}
                     />
                   </div>

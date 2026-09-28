@@ -221,6 +221,7 @@ model TeamMember {
   hireDate  DateTime?
   address   String?
   email     String?
+  phone     String?
 
   // Links this roster profile to a real Administração login, if any — optional (Equipes can
   // create a person on its own; linking to a User account is a choice, not a requirement).

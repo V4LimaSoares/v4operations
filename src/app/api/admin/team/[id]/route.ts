@@ -19,6 +19,7 @@ const schema = z.object({
   hireDate: z.string().nullish(),
   address: z.string().nullish(),
   email: z.string().email().nullish().or(z.literal("")),
+  phone: z.string().nullish(),
 });
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
