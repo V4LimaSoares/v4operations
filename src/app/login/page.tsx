@@ -7,7 +7,6 @@ import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 
 function LoginForm() {
   const router = useRouter();
@@ -44,19 +43,22 @@ function LoginForm() {
     }
   }
 
+  const inputCls =
+    "h-11 border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-primary/40";
+
   return (
-    <Card className="w-full max-w-sm border-white/15 bg-white/[0.07] p-8 shadow-2xl shadow-black/50 backdrop-blur-2xl">
+    <div className="w-full max-w-sm">
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
-        <Image src="/brand/v4-logo.png" alt="V4" width={44} height={44} priority />
+        <Image src="/brand/v4-logo.png" alt="V4" width={52} height={52} priority />
         <div>
-          <h1 className="text-lg font-semibold text-white">V4 Company - Operations</h1>
-          <p className="text-sm text-white/60">Entre com suas credenciais para continuar</p>
+          <h1 className="text-2xl font-semibold text-neutral-900">Login</h1>
+          <p className="mt-1 text-sm text-neutral-500">V4 Company - Operations</p>
         </div>
       </div>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email" className="text-white/80">
+          <Label htmlFor="email" className="text-neutral-800">
             E-mail
           </Label>
           <Input
@@ -67,18 +69,13 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="voce@empresa.com"
-            className="border-white/15 bg-white/5 text-white placeholder:text-white/35 focus-visible:ring-primary/60"
+            className={inputCls}
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-white/80">
-              Senha
-            </Label>
-            <Link href="/esqueci-senha" className="text-xs text-primary hover:underline">
-              Esqueci minha senha
-            </Link>
-          </div>
+          <Label htmlFor="password" className="text-neutral-800">
+            Senha
+          </Label>
           <Input
             id="password"
             type="password"
@@ -87,30 +84,34 @@ function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="border-white/15 bg-white/5 text-white placeholder:text-white/35 focus-visible:ring-primary/60"
+            className={inputCls}
           />
         </div>
 
         {error && (
-          <p className="rounded-lg bg-negative-soft px-3 py-2 text-sm text-negative">{error}</p>
+          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
         )}
 
-        <Button type="submit" disabled={loading} className="mt-2 w-full">
+        <Button type="submit" disabled={loading} className="mt-2 h-11 w-full text-base">
           {loading && <Loader2 className="size-4 animate-spin" />}
           Entrar
         </Button>
+
+        <Link href="/esqueci-senha" className="text-center text-sm text-primary hover:underline">
+          Esqueci minha senha
+        </Link>
       </form>
 
       <div className="my-5 flex items-center gap-3">
-        <div className="h-px flex-1 bg-white/15" />
-        <span className="text-xs text-white/45">ou</span>
-        <div className="h-px flex-1 bg-white/15" />
+        <div className="h-px flex-1 bg-neutral-200" />
+        <span className="text-xs text-neutral-400">ou</span>
+        <div className="h-px flex-1 bg-neutral-200" />
       </div>
 
       <Button
         type="button"
         variant="outline"
-        className="w-full border-white/15 bg-white/5 text-white hover:bg-white/10"
+        className="h-11 w-full border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50"
         onClick={() => setGoogleNotice(true)}
       >
         <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
@@ -134,35 +135,26 @@ function LoginForm() {
         Entrar com o Google
       </Button>
       {googleNotice && (
-        <p className="mt-3 text-center text-xs text-white/50">
+        <p className="mt-3 text-center text-xs text-neutral-500">
           Login com Google chega em breve — por enquanto, use e-mail e senha.
         </p>
       )}
-    </Card>
+    </div>
   );
 }
 
 export default function LoginPage() {
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-4">
-      <Image
-        src="/brand/login-bg.jpg"
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover"
-      />
-      {/* Vignette: darker at the edges for contrast with the card, lighter behind it so the
-          red hallway photo still reads through the glass instead of going muddy. */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.55)_75%)]" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/50" />
-
-      <div className="relative z-10">
+    <div className="flex min-h-screen bg-white">
+      <div className="flex w-full flex-col items-center justify-center px-6 py-10 lg:w-[42%] lg:min-w-[420px]">
         <Suspense>
           <LoginForm />
         </Suspense>
       </div>
+
+      {/* Reserved for the login artwork — solid brand red until the image is provided. To fill it,
+          drop the file in public/brand/ and render it here as an <Image fill className="object-cover" />. */}
+      <div className="relative hidden flex-1 bg-primary lg:block" aria-hidden />
     </div>
   );
 }
