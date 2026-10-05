@@ -152,9 +152,16 @@ export default function LoginPage() {
         </Suspense>
       </div>
 
-      {/* Reserved for the login artwork — solid brand red until the image is provided. To fill it,
-          drop the file in public/brand/ and render it here as an <Image fill className="object-cover" />. */}
-      <div className="relative hidden flex-1 bg-primary lg:block" aria-hidden />
+      <div className="relative hidden flex-1 bg-black lg:block" aria-hidden>
+        <Image
+          src="/brand/login-art.webp"
+          alt=""
+          fill
+          priority
+          sizes="58vw"
+          className="object-cover object-center"
+        />
+      </div>
     </div>
   );
 }
