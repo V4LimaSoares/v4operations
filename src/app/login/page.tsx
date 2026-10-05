@@ -51,7 +51,7 @@ function LoginForm() {
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
         <Image src="/brand/v4-logo.png" alt="V4" width={52} height={52} priority />
         <div>
-          <h1 className="text-2xl font-semibold text-neutral-900">Login</h1>
+          <h1 className="text-2xl font-semibold text-neutral-900">Bem-vindo!</h1>
           <p className="mt-1 text-sm text-neutral-500">V4 Company - Operations</p>
         </div>
       </div>
