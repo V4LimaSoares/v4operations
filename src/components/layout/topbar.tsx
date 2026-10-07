@@ -10,7 +10,7 @@ export function Topbar({
   clients,
 }: {
   appName: string;
-  user: { name: string; email: string; role: "ADMIN" | "STAFF" | "CLIENT"; modulePermissions: string[] };
+  user: { name: string; email: string; role: "ADMIN" | "STAFF" | "CLIENT"; modulePermissions: string[]; avatarSrc?: string | null };
   clients?: { id: string; name: string; company: string }[];
 }) {
   return (
@@ -29,7 +29,7 @@ export function Topbar({
         {/* Desktop shows the account menu docked at the bottom of the sidebar instead — this stays
             only for mobile/tablet, where that sidebar isn't rendered at all. */}
         <div className="lg:hidden">
-          <UserMenu name={user.name} email={user.email} role={user.role} />
+          <UserMenu name={user.name} email={user.email} avatarSrc={user.avatarSrc} role={user.role} />
         </div>
       </div>
     </header>

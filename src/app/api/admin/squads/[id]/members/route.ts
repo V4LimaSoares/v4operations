@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireStaffModule } from "@/lib/session";
+import { forbidden, MSG } from "@/lib/capabilities";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit";
 
@@ -8,6 +9,7 @@ const schema = z.object({ teamMemberId: z.string().min(1), role: z.string().null
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const actor = await requireStaffModule("equipes");
+  if (actor.role !== "ADMIN") return forbidden(MSG.squad);
   const { id: squadId } = await params;
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
@@ -53,6 +55,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const actor = await requireStaffModule("equipes");
+  if (actor.role !== "ADMIN") return forbidden(MSG.squad);
   const { id: squadId } = await params;
   const { searchParams } = new URL(req.url);
   const teamMemberId = searchParams.get("teamMemberId");

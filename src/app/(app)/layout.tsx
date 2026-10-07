@@ -1,4 +1,5 @@
 import { requireUser } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 import { listClientOptions } from "@/lib/scope";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
@@ -10,19 +11,22 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const user = await requireUser();
   const clients = user.role === "ADMIN" || user.role === "STAFF" ? await listClientOptions() : undefined;
 
+  const member = await prisma.teamMember.findUnique({ where: { userId: user.id }, select: { id: true, photoUrl: true } });
+  const avatarSrc = member?.photoUrl ? `/api/team/${member.id}/avatar?v=${encodeURIComponent(member.photoUrl)}` : null;
+
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar
         role={user.role}
         appName={APP_NAME}
         modulePermissions={user.modulePermissions}
-        user={{ name: user.name, email: user.email }}
+        user={{ name: user.name, email: user.email, avatarSrc }}
       />
       <div className="flex min-w-0 flex-1 flex-col">
         {user.role === "ADMIN" && <EkyteIntegrationBanner />}
         <Topbar
           appName={APP_NAME}
-          user={{ name: user.name, email: user.email, role: user.role, modulePermissions: user.modulePermissions }}
+          user={{ name: user.name, email: user.email, role: user.role, modulePermissions: user.modulePermissions, avatarSrc }}
           clients={clients}
         />
         <main className="flex-1 overflow-y-auto scrollbar-thin">

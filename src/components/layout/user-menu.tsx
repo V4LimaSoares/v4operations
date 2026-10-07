@@ -17,10 +17,12 @@ import { useTheme } from "@/lib/use-theme";
 export function UserMenu({
   name,
   email,
+  avatarSrc,
   role,
 }: {
   name: string;
   email: string;
+  avatarSrc?: string | null;
   role: "ADMIN" | "STAFF" | "CLIENT";
 }) {
   const router = useRouter();
@@ -45,8 +47,13 @@ export function UserMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2 py-1.5 text-sm hover:bg-surface-2">
-        <div className="flex size-7 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-primary">
-          {initials || <UserIcon className="size-3.5" />}
+        <div className="flex size-7 items-center justify-center overflow-hidden rounded-full bg-primary-soft text-xs font-semibold text-primary">
+          {avatarSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={avatarSrc} alt="" className="size-full object-cover" />
+          ) : (
+            initials || <UserIcon className="size-3.5" />
+          )}
         </div>
         <span className="hidden max-w-32 truncate font-medium sm:inline">{name}</span>
       </DropdownMenuTrigger>

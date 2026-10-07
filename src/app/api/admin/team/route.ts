@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireStaffModule } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit";
+import { canEditOwnProfile, forbidden, MSG } from "@/lib/capabilities";
 
 // A rotating palette for teammates added from the UI (the original 9 use named CSS vars already
 // defined in globals.css for exact continuity with SLA/Ekyte charts — new hires just get a hex
@@ -26,6 +27,7 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   const actor = await requireStaffModule("equipes");
+  if (actor.role !== "ADMIN") return forbidden(MSG.adminOnly);
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {

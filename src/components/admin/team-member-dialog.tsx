@@ -47,8 +47,18 @@ function toISODate(d: Date | string | null | undefined): string {
  *  free-form create (nome/cargo/cor), with an optional link to an existing Administração account.
  *  Linking is a choice, not a requirement: a person can exist in Equipes without ever having a
  *  login. */
-export function TeamMemberDialog({ member, availableUsers = [] }: { member?: EditableTeamMember; availableUsers?: AvailableUser[] }) {
-  return member ? <EditMemberDialog member={member} /> : <AddMemberDialog availableUsers={availableUsers} />;
+/** `selfOnly` = a non-admin editing their own profile: contact info and photo only. Cargo, name,
+ *  hire date, colour and removal stay admin-only (enforced again in the API). */
+export function TeamMemberDialog({
+  member,
+  availableUsers = [],
+  selfOnly = false,
+}: {
+  member?: EditableTeamMember;
+  availableUsers?: AvailableUser[];
+  selfOnly?: boolean;
+}) {
+  return member ? <EditMemberDialog member={member} selfOnly={selfOnly} /> : <AddMemberDialog availableUsers={availableUsers} />;
 }
 
 function AddMemberDialog({ availableUsers }: { availableUsers: AvailableUser[] }) {
@@ -175,7 +185,7 @@ function AddMemberDialog({ availableUsers }: { availableUsers: AvailableUser[] }
   );
 }
 
-function EditMemberDialog({ member }: { member: EditableTeamMember }) {
+function EditMemberDialog({ member, selfOnly }: { member: EditableTeamMember; selfOnly: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -240,11 +250,11 @@ function EditMemberDialog({ member }: { member: EditableTeamMember }) {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          role,
-          ...(isLinked ? {} : { name }),
-          ...(colorTouched ? { colorVar: color } : {}),
+          ...(selfOnly ? {} : { role }),
+          ...(isLinked || selfOnly ? {} : { name }),
+          ...(colorTouched && !selfOnly ? { colorVar: color } : {}),
           birthDate: birthDate || null,
-          hireDate: hireDate || null,
+          ...(selfOnly ? {} : { hireDate: hireDate || null }),
           address: address.trim() || null,
           email: email.trim() || null,
           phone: phone.trim() || null,
@@ -308,12 +318,13 @@ function EditMemberDialog({ member }: { member: EditableTeamMember }) {
                 <p className="text-xs text-muted-2">Gerenciado em Administração &gt; Usuários.</p>
               </>
             ) : (
-              <Input id="team-name" required value={name} onChange={(e) => setName(e.target.value)} />
+              <Input id="team-name" required value={name} onChange={(e) => setName(e.target.value)} disabled={selfOnly} />
             )}
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="team-role">Função</Label>
-            <Input id="team-role" required placeholder="Ex: Gestor de Tráfego" value={role} onChange={(e) => setRole(e.target.value)} />
+            <Input id="team-role" required placeholder="Ex: Gestor de Tráfego" value={role} onChange={(e) => setRole(e.target.value)} disabled={selfOnly} />
+            {selfOnly && <p className="text-xs text-muted-2">O cargo só pode ser alterado por um administrador.</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
@@ -322,7 +333,7 @@ function EditMemberDialog({ member }: { member: EditableTeamMember }) {
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="team-hire">Contratação</Label>
-              <Input id="team-hire" type="date" value={hireDate} onChange={(e) => setHireDate(e.target.value)} />
+              <Input id="team-hire" type="date" value={hireDate} onChange={(e) => setHireDate(e.target.value)} disabled={selfOnly} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -376,13 +387,18 @@ function EditMemberDialog({ member }: { member: EditableTeamMember }) {
                 setColor(e.target.value);
                 setColorTouched(true);
               }}
-              className="h-9 w-16 cursor-pointer rounded-lg border border-border bg-surface p-1"
+              disabled={selfOnly}
+              className="h-9 w-16 cursor-pointer rounded-lg border border-border bg-surface p-1 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
           <DialogFooter className="items-center justify-between sm:justify-between">
-            <Button type="button" variant="ghost" onClick={onDelete} disabled={loading} className="text-negative hover:bg-negative-soft">
-              <Trash2 className="size-4" /> Remover da equipe
-            </Button>
+            {selfOnly ? (
+              <span />
+            ) : (
+              <Button type="button" variant="ghost" onClick={onDelete} disabled={loading} className="text-negative hover:bg-negative-soft">
+                <Trash2 className="size-4" /> Remover da equipe
+              </Button>
+            )}
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="size-4 animate-spin" />}
               Salvar

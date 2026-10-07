@@ -41,7 +41,7 @@ export function Sidebar({
   role: "ADMIN" | "STAFF" | "CLIENT";
   appName: string;
   modulePermissions: string[];
-  user: { name: string; email: string };
+  user: { name: string; email: string; avatarSrc?: string | null };
 }) {
   const pathname = usePathname();
   const search = useSearchParams();
@@ -224,7 +224,7 @@ export function Sidebar({
           })}
         </nav>
 
-        <SidebarUserMenu name={user.name} email={user.email} role={role} fadeClassName={fade} onRed />
+        <SidebarUserMenu name={user.name} email={user.email} avatarSrc={user.avatarSrc} role={role} fadeClassName={fade} onRed />
       </div>
     </aside>
   );

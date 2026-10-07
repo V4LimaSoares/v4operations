@@ -1,4 +1,5 @@
 import { requireStaffModule } from "@/lib/session";
+import { canEditPerformance } from "@/lib/capabilities";
 import { performanceTabItems } from "@/lib/nav";
 import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { prisma } from "@/lib/prisma";
@@ -19,6 +20,7 @@ const STATUS_META: Record<SyncStatus, { label: string; variant: "positive" | "ne
 
 export default async function SincronizacoesPage() {
   const user = await requireStaffModule("sincronizacoes");
+  const canEdit = await canEditPerformance(user);
 
   const [accounts, logs] = await Promise.all([
     prisma.adAccount.findMany({
@@ -62,7 +64,7 @@ export default async function SincronizacoesPage() {
                   <TableCell><PlatformBadge platform={a.platform} /></TableCell>
                   <TableCell><DataSourceBadge dataSource={a.dataSource} /></TableCell>
                   <TableCell className="text-xs text-muted">{a.lastSyncAt ? formatDate(a.lastSyncAt) : "Nunca"}</TableCell>
-                  <TableCell><SyncButton adAccountId={a.id} /></TableCell>
+                  <TableCell>{canEdit && <SyncButton adAccountId={a.id} />}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

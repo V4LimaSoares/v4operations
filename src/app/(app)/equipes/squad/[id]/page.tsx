@@ -18,7 +18,8 @@ import { RefreshNowButton } from "@/components/admin/refresh-now-button";
 import { formatBRL, formatPercent } from "@/lib/utils";
 
 export default async function SquadDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireStaffModule("equipes");
+  const user = await requireStaffModule("equipes");
+  const isAdmin = user.role === "ADMIN";
   const { id } = await params;
   const [squad, allTeam, allClients, monitor] = await Promise.all([
     getSquadById(id),
@@ -78,7 +79,7 @@ export default async function SquadDetailPage({ params }: { params: Promise<{ id
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <RefreshNowButton />
-          <SquadDetailActions squad={{ id: squad.id, name: squad.name, logoUrl: squad.logoUrl }} />
+          {isAdmin && <SquadDetailActions squad={{ id: squad.id, name: squad.name, logoUrl: squad.logoUrl }} />}
         </div>
       </div>
 
@@ -99,6 +100,7 @@ export default async function SquadDetailPage({ params }: { params: Promise<{ id
             squadId={squad.id}
             linked={linkedMembers}
             available={allTeam.map((m) => ({ id: m.id, name: m.name, colorVar: m.colorVar }))}
+            readOnly={!isAdmin}
           />
         </Card>
 
@@ -106,7 +108,7 @@ export default async function SquadDetailPage({ params }: { params: Promise<{ id
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
             <Wallet className="size-4 text-muted" /> Clientes
           </div>
-          <SquadClientPanel squadId={squad.id} linked={linkedClients} available={allClients.filter((c) => !takenElsewhere.has(c.id))} />
+          <SquadClientPanel squadId={squad.id} linked={linkedClients} available={allClients.filter((c) => !takenElsewhere.has(c.id))} readOnly={!isAdmin} />
         </Card>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireStaffModule } from "@/lib/session";
+import { canEditPerformance, forbidden, MSG } from "@/lib/capabilities";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit";
 
@@ -36,6 +37,7 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   const actor = await requireStaffModule("contas");
+  if (!(await canEditPerformance(actor))) return forbidden(MSG.performance);
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {

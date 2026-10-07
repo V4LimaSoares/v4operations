@@ -23,10 +23,12 @@ export function HealthScoreTable({
   entries,
   clients,
   portfolioItems = [],
+  readOnly = false,
 }: {
   entries: HealthScoreEntry[];
   clients: { id: string; name: string; company: string }[];
   portfolioItems?: PortfolioOption[];
+  readOnly?: boolean;
 }) {
   const [selected, setSelected] = useState<HealthScoreEntry | null>(null);
 
@@ -70,6 +72,7 @@ export function HealthScoreTable({
         <HealthScoreDialog
           clients={clients}
           portfolioItems={portfolioItems}
+          readOnly={readOnly}
           entry={toHealthScoreFormEntry(selected)}
           trigger={null}
           open={!!selected}

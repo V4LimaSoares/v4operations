@@ -1,5 +1,6 @@
 import { Users, HeartPulse, AlertTriangle, Siren, Percent } from "lucide-react";
 import { requireStaffModule } from "@/lib/session";
+import { canEditHealthScore } from "@/lib/capabilities";
 import { presetToRange } from "@/lib/data/metrics";
 import { listClientsWithStats } from "@/lib/data/clients";
 import { listTeamMembers } from "@/lib/data/team";
@@ -21,6 +22,7 @@ import { formatBRL, formatPercent } from "@/lib/utils";
 // agency's client roster), just two different views of it (cadastro vs. saúde da conta).
 export default async function ClientesPage() {
   const user = await requireStaffModule("clientes");
+  const hsCanEdit = await canEditHealthScore(user);
   const range = presetToRange("30d");
   const [clients, team, hsEntries, hsAggregate, clientOptions, portfolioItems] = await Promise.all([
     listClientsWithStats(range),
@@ -66,7 +68,7 @@ export default async function ClientesPage() {
             <StatCard label="Em churn" value={hsAggregate.churn} icon={Siren} formatter={(v) => String(v)} invertDelta />
           </div>
 
-          <HealthScoreTable entries={hsEntries} clients={clientOptions} portfolioItems={portfolioItems} />
+          <HealthScoreTable entries={hsEntries} clients={clientOptions} portfolioItems={portfolioItems} readOnly={!hsCanEdit} />
         </TabsContent>
       </Tabs>
     </div>

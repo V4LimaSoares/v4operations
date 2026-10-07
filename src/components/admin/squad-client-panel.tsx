@@ -17,10 +17,12 @@ export function SquadClientPanel({
   squadId,
   linked,
   available,
+  readOnly = false,
 }: {
   squadId: string;
   linked: ClientOption[];
   available: ClientOption[];
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -73,7 +75,8 @@ export function SquadClientPanel({
               <Link href={`/clientes/${c.id}`} className="hover:text-primary hover:underline">
                 {c.name}
               </Link>
-              <button
+              {!readOnly && (
+                <button
                 type="button"
                 disabled={pending}
                 onClick={() => unlink(c.id)}
@@ -82,12 +85,13 @@ export function SquadClientPanel({
               >
                 <X className="size-3.5" />
               </button>
+              )}
             </span>
           ))}
         </div>
       )}
 
-      {unlinked.length > 0 && (
+      {!readOnly && unlinked.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <Select value={pickerValue} onChange={(e) => setPickerValue(e.target.value)} className="max-w-64" aria-label="Vincular cliente">
             <option value="">Selecione um cliente…</option>

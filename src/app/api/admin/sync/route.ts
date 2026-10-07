@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireStaffModule } from "@/lib/session";
+import { canEditPerformance, forbidden, MSG } from "@/lib/capabilities";
 import { prisma } from "@/lib/prisma";
 import { randomDailyMetric, splitAcrossChildren } from "@/lib/demo/generator";
 import { generateSearchTermVariants, randomSearchTermStatus, randomSearchTermMetric } from "@/lib/demo/search-terms";
@@ -11,6 +12,7 @@ const schema = z.object({ adAccountId: z.string().min(1) });
 
 export async function POST(req: Request) {
   const admin = await requireStaffModule("sincronizacoes");
+  if (!(await canEditPerformance(admin))) return forbidden(MSG.performance);
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {

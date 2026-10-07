@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireModule } from "@/lib/session";
+import { canEditPerformance, forbidden, MSG } from "@/lib/capabilities";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit";
 
@@ -13,6 +14,7 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   const user = await requireModule("faturamento");
+  if (user.role === "STAFF" && !(await canEditPerformance(user))) return forbidden(MSG.performance);
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
@@ -43,6 +45,7 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   const user = await requireModule("faturamento");
+  if (user.role === "STAFF" && !(await canEditPerformance(user))) return forbidden(MSG.performance);
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id obrigatório." }, { status: 400 });

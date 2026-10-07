@@ -1,4 +1,5 @@
 import { requireStaffModule } from "@/lib/session";
+import { ownTeamMemberId } from "@/lib/capabilities";
 import { listTeamMembers, listAvailableUsersForTeam } from "@/lib/data/team";
 import { listSquads, getSquadMrrAndChurn, squadTaskSummary, squadSlaAlertSummary } from "@/lib/data/squads";
 import { getSlaMonitor } from "@/lib/data/sla";
@@ -8,7 +9,8 @@ import type { SquadCardData } from "@/components/admin/squad-card";
 // "Equipes" (cadastro de pessoas) and "Squad" (grupos de pessoas + carteira de clientes) merged
 // into one route with tabs — same move já feito pra SLA/Operação e Clientes/Health Score.
 export default async function EquipesPage() {
-  await requireStaffModule("equipes");
+  const user = await requireStaffModule("equipes");
+  const ownMemberId = user.role === "ADMIN" ? null : await ownTeamMemberId(user);
   const [team, squads, monitor, availableUsers] = await Promise.all([
     listTeamMembers(),
     listSquads(),
@@ -43,7 +45,7 @@ export default async function EquipesPage() {
 
   return (
     <div>
-      <EquipesTabsSection team={teamByWorkload} squadCards={squadCards} availableUsers={availableUsers} />
+      <EquipesTabsSection team={teamByWorkload} squadCards={squadCards} availableUsers={availableUsers} isAdmin={user.role === "ADMIN"} ownMemberId={ownMemberId} />
     </div>
   );
 }

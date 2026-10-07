@@ -1,5 +1,6 @@
 import { Wallet, Receipt, TrendingUp, Ticket } from "lucide-react";
 import { requireModule } from "@/lib/session";
+import { canEditPerformance } from "@/lib/capabilities";
 import { performanceTabItems } from "@/lib/nav";
 import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { resolveScope } from "@/lib/scope";
@@ -20,6 +21,7 @@ export default async function FaturamentoPage({
   searchParams: Promise<{ period?: string; clientId?: string }>;
 }) {
   const user = await requireModule("faturamento");
+  const canEdit = user.role === "CLIENT" || (await canEditPerformance(user));
   const params = await searchParams;
   const scope = resolveScope(user, params.clientId);
   const range = presetToRange(params.period ?? "30d");
@@ -38,7 +40,7 @@ export default async function FaturamentoPage({
         actions={
           <>
             <FiltersBar showPlatform={false} />
-            {scope.clientId && <RevenueForm clientId={scope.clientId} />}
+            {scope.clientId && canEdit && <RevenueForm clientId={scope.clientId} />}
           </>
         }
       />

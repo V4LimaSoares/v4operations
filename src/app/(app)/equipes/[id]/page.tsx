@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireStaffModule } from "@/lib/session";
+import { canEditOwnProfile } from "@/lib/capabilities";
 import { getTeamMemberById } from "@/lib/data/team";
 import { listClientOptions } from "@/lib/scope";
 import { getSlaAttendance, TEAM as SLA_TEAM, lastBusinessDays } from "@/lib/data/sla";
@@ -17,8 +18,10 @@ import { Clock, Target, Users, AlertTriangle, ListChecks, CheckCircle2, Timer, C
 import { formatDateOnly } from "@/lib/utils";
 
 export default async function EquipeDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireStaffModule("equipes");
+  const user = await requireStaffModule("equipes");
   const { id } = await params;
+  const canEdit = await canEditOwnProfile(user, id);
+  const isAdmin = user.role === "ADMIN";
   const [member, allClients] = await Promise.all([getTeamMemberById(id), listClientOptions()]);
   if (!member) notFound();
 
@@ -50,7 +53,9 @@ export default async function EquipeDetailPage({ params }: { params: Promise<{ i
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <TeamAvatar id={member.id} name={member.name} colorVar={member.colorVar} photoUrl={member.photoUrl} className="size-11" />
+            {canEdit && (
             <TeamMemberDialog
+              selfOnly={!isAdmin}
               member={{
                 id: member.id,
                 name: member.name,
@@ -65,6 +70,7 @@ export default async function EquipeDetailPage({ params }: { params: Promise<{ i
                 phone: member.phone,
               }}
             />
+            )}
           </div>
         }
       />
@@ -72,7 +78,7 @@ export default async function EquipeDetailPage({ params }: { params: Promise<{ i
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card className="p-5">
           <div className="mb-3 text-sm font-semibold">Clientes vinculados</div>
-          <ClientLinkPanel teamMemberId={member.id} linked={linked} available={allClients} />
+          <ClientLinkPanel teamMemberId={member.id} linked={linked} available={allClients} readOnly={!canEdit} />
         </Card>
 
         <Card className="p-5">

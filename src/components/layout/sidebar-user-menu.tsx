@@ -20,12 +20,14 @@ import { useTheme } from "@/lib/use-theme";
 export function SidebarUserMenu({
   name,
   email,
+  avatarSrc,
   role,
   fadeClassName,
   onRed = false,
 }: {
   name: string;
   email: string;
+  avatarSrc?: string | null;
   role: "ADMIN" | "STAFF" | "CLIENT";
   fadeClassName: string;
   /** The floating sidebar card is solid brand red — swaps the trigger row's colors for
@@ -63,11 +65,16 @@ export function SidebarUserMenu({
         >
           <div
             className={cn(
-              "flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
+              "flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-semibold",
               onRed ? "bg-white/20 text-white" : "bg-primary-soft text-primary"
             )}
           >
-            {initials || <UserIcon className="size-3.5" />}
+            {avatarSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarSrc} alt="" className="size-full object-cover" />
+            ) : (
+              initials || <UserIcon className="size-3.5" />
+            )}
           </div>
           <div className={cn("min-w-0 flex-1", fadeClassName)}>
             <div className={cn("truncate text-sm font-medium", onRed ? "text-white" : "text-foreground")}>{name}</div>

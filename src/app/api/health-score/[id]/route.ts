@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { requireStaffModule } from "@/lib/session";
+import { canEditHealthScore, forbidden, MSG } from "@/lib/capabilities";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit";
 import { diffHealthScoreFields } from "@/lib/health-score-diff";
@@ -48,6 +49,7 @@ const schema = z.object({
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const actor = await requireStaffModule("clientes");
+  if (!(await canEditHealthScore(actor))) return forbidden(MSG.healthScore);
   const { id } = await params;
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
@@ -94,6 +96,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const actor = await requireStaffModule("clientes");
+  if (!(await canEditHealthScore(actor))) return forbidden(MSG.healthScore);
   const { id } = await params;
   const entry = await prisma.healthScoreEntry.delete({ where: { id } });
 

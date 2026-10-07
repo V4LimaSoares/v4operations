@@ -36,10 +36,15 @@ export function EquipesTabsSection({
   team,
   squadCards,
   availableUsers,
+  isAdmin,
+  ownMemberId,
 }: {
   team: TeamMemberRow[];
   squadCards: SquadCardData[];
   availableUsers: AvailableUser[];
+  /** Admin: full control. Others: edit only their own profile; squads and new members are admin-only. */
+  isAdmin: boolean;
+  ownMemberId: string | null;
 }) {
   const searchParams = useSearchParams();
   const [tab, setTabState] = useState(searchParams.get("tab") === "squad" ? "squad" : "equipes");
@@ -60,7 +65,7 @@ export function EquipesTabsSection({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {tab === "equipes" ? <TeamMemberDialog availableUsers={availableUsers} /> : <SquadDialog />}
+          {isAdmin && (tab === "equipes" ? <TeamMemberDialog availableUsers={availableUsers} /> : <SquadDialog />)}
         </div>
       </div>
 
@@ -82,8 +87,10 @@ export function EquipesTabsSection({
                   key={m.id}
                   className="relative h-full overflow-hidden p-5 transition-all hover:-translate-y-0.5 hover:border-muted-2 hover:shadow-lg"
                 >
+                  {(isAdmin || m.id === ownMemberId) && (
                   <div className="absolute right-3 top-3">
                     <TeamMemberDialog
+                      selfOnly={!isAdmin}
                       member={{
                         id: m.id,
                         name: m.name,
@@ -99,6 +106,7 @@ export function EquipesTabsSection({
                       }}
                     />
                   </div>
+                  )}
                   <Link href={`/equipes/${m.id}`} className="block">
                     <div className="flex items-center justify-between pr-8">
                       <TeamAvatar id={m.id} name={m.name} colorVar={m.colorVar} photoUrl={m.photoUrl} />
@@ -129,7 +137,7 @@ export function EquipesTabsSection({
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {squadCards.map((s) => (
-                <SquadCard key={s.id} squad={s} />
+                <SquadCard key={s.id} squad={s} canEdit={isAdmin} />
               ))}
             </div>
           )}

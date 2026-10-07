@@ -17,10 +17,12 @@ export function ClientLinkPanel({
   teamMemberId,
   linked,
   available,
+  readOnly = false,
 }: {
   teamMemberId: string;
   linked: LinkedClient[];
   available: ClientOption[];
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -78,7 +80,8 @@ export function ClientLinkPanel({
                 </div>
                 <div className="truncate text-xs text-muted">{c.company}</div>
               </Link>
-              <button
+              {!readOnly && (
+                <button
                 type="button"
                 disabled={pending}
                 onClick={() => unlink(c.id)}
@@ -87,12 +90,13 @@ export function ClientLinkPanel({
               >
                 <X className="size-4" />
               </button>
+              )}
             </div>
           ))}
         </div>
       )}
 
-      {unlinked.length > 0 && (
+      {!readOnly && unlinked.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <Select
             value={pickerValue}

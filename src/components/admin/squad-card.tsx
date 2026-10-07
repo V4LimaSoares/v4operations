@@ -18,12 +18,14 @@ export type SquadCardData = {
   sla: { attention: number; urgent: number };
 };
 
-export function SquadCard({ squad }: { squad: SquadCardData }) {
+export function SquadCard({ squad, canEdit = false }: { squad: SquadCardData; canEdit?: boolean }) {
   return (
     <Card className="relative h-full overflow-hidden p-5 transition-all hover:-translate-y-0.5 hover:border-muted-2 hover:shadow-lg">
-      <div className="absolute right-3 top-3">
-        <SquadRowActions squad={{ id: squad.id, name: squad.name, logoUrl: squad.logoUrl }} />
-      </div>
+      {canEdit && (
+        <div className="absolute right-3 top-3">
+          <SquadRowActions squad={{ id: squad.id, name: squad.name, logoUrl: squad.logoUrl }} />
+        </div>
+      )}
       <Link href={`/equipes/squad/${squad.id}`} className="block">
         <div className="flex items-center gap-3 pr-8">
           {squad.logoUrl ? (

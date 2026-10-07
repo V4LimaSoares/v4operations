@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Users, UserRound, ClipboardList, RefreshCw, User as UserIcon } from "lucide-react";
 import { requireUser } from "@/lib/session";
 import { getProfileData } from "@/lib/data/profile";
+import { ProfilePhotoUploader } from "@/components/layout/profile-photo-uploader";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,12 +38,18 @@ export default async function PerfilPage() {
 
       <Card className="p-5">
         <div className="flex flex-wrap items-center gap-4">
-          <div
-            className="flex size-16 shrink-0 items-center justify-center rounded-2xl text-xl font-bold text-white"
-            style={{ background: teamMemberProfile?.colorVar || "var(--color-primary)" }}
-          >
-            {initials || <UserIcon className="size-6" />}
-          </div>
+          {teamMemberProfile ? (
+            <ProfilePhotoUploader
+              memberId={teamMemberProfile.id}
+              name={user.name}
+              colorVar={teamMemberProfile.colorVar}
+              photoUrl={teamMemberProfile.photoUrl}
+            />
+          ) : (
+            <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-xl font-bold text-white">
+              {initials || <UserIcon className="size-6" />}
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-lg font-semibold">{user.name}</h2>

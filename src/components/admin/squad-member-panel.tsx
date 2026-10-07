@@ -18,10 +18,12 @@ export function SquadMemberPanel({
   squadId,
   linked,
   available,
+  readOnly = false,
 }: {
   squadId: string;
   linked: LinkedMember[];
   available: MemberOption[];
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -84,7 +86,8 @@ export function SquadMemberPanel({
                   {m.role && <div className="truncate text-xs text-muted">{m.role}</div>}
                 </div>
               </Link>
-              <button
+              {!readOnly && (
+                <button
                 type="button"
                 disabled={pending}
                 onClick={() => unlink(m.id)}
@@ -93,12 +96,13 @@ export function SquadMemberPanel({
               >
                 <X className="size-4" />
               </button>
+              )}
             </div>
           ))}
         </div>
       )}
 
-      {unlinked.length > 0 && (
+      {!readOnly && unlinked.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <Select value={pickerValue} onChange={(e) => setPickerValue(e.target.value)} className="max-w-64" aria-label="Vincular pessoa">
             <option value="">Selecione uma pessoa…</option>

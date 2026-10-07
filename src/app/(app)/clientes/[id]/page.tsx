@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requireStaffModule } from "@/lib/session";
+import { canEditHealthScore } from "@/lib/capabilities";
 import { getClientById } from "@/lib/data/clients";
 import { listClientOptions } from "@/lib/scope";
 import { listTeamMembers } from "@/lib/data/team";
@@ -39,7 +40,8 @@ function flagVariant(flag: string | null): "positive" | "warning" | "negative" |
 }
 
 export default async function ClienteDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireStaffModule("clientes");
+  const user = await requireStaffModule("clientes");
+  const hsCanEdit = await canEditHealthScore(user);
   const { id } = await params;
   const [client, allTeam, healthEntries, accountNotes, allPortfolioItems] = await Promise.all([
     getClientById(id),
@@ -151,7 +153,7 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
         </TabsContent>
 
         <TabsContent value="account">
-          <HealthTab client={client} entries={healthEntries} portfolioItems={allPortfolioItems} />
+          <HealthTab client={client} entries={healthEntries} portfolioItems={allPortfolioItems} canEdit={hsCanEdit} />
           <div className="mt-6">
             <AccountNotesPanel
               clientId={client.id}
@@ -317,17 +319,21 @@ async function HealthTab({
   client,
   entries,
   portfolioItems,
+  canEdit,
 }: {
   client: { id: string };
   entries: Awaited<ReturnType<typeof getHealthScoreEntriesByClientId>>;
   portfolioItems: Awaited<ReturnType<typeof listPortfolioItems>>;
+  canEdit: boolean;
 }) {
   const clientOptions = await listClientOptions();
   return (
     <div>
-      <div className="mb-3 flex justify-end">
-        <HealthScoreDialog clients={clientOptions} defaultClientId={client.id} portfolioItems={portfolioItems} />
-      </div>
+      {canEdit && (
+        <div className="mb-3 flex justify-end">
+          <HealthScoreDialog clients={clientOptions} defaultClientId={client.id} portfolioItems={portfolioItems} />
+        </div>
+      )}
       {entries.length === 0 ? (
         <Card className="p-8 text-center text-sm text-muted">
           Nenhum registro de Health Score para este cliente ainda.
@@ -342,7 +348,7 @@ async function HealthTab({
                   <Badge variant={e.phase.toLowerCase() === "churn" ? "negative" : "default"}>{e.phase}</Badge>
                   {e.flag && <Badge variant={flagVariant(e.flag)}>{e.flag}</Badge>}
                 </div>
-                <HealthScoreDialog clients={clientOptions} entry={toHealthScoreFormEntry(e)} portfolioItems={portfolioItems} />
+                <HealthScoreDialog clients={clientOptions} entry={toHealthScoreFormEntry(e)} portfolioItems={portfolioItems} readOnly={!canEdit} />
               </div>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <Info label="Fee mensal" value={e.feeBrl != null ? formatBRL(e.feeBrl) : "—"} />

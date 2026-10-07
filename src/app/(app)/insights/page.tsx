@@ -1,4 +1,5 @@
 import { requireModule } from "@/lib/session";
+import { canEditPerformance } from "@/lib/capabilities";
 import { performanceTabItems } from "@/lib/nav";
 import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { resolveScope } from "@/lib/scope";
@@ -25,6 +26,7 @@ export default async function InsightsPage({
   searchParams: Promise<{ clientId?: string }>;
 }) {
   const user = await requireModule("insights");
+  const canEdit = user.role === "CLIENT" || (await canEditPerformance(user));
   const params = await searchParams;
   const scope = resolveScope(user, params.clientId);
 
@@ -50,7 +52,7 @@ export default async function InsightsPage({
             ? `Última geração: ${formatDate(lastGeneratedAt)}`
             : "Interpretações automáticas de performance geradas a partir dos dados de campanha"
         }
-        actions={<GenerateInsightsButton />}
+        actions={canEdit ? <GenerateInsightsButton /> : undefined}
       />
       <PerformanceTabs
         items={performanceTabItems(user.role, user.modulePermissions)}

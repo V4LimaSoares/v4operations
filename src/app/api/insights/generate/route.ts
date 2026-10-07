@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireModule } from "@/lib/session";
+import { canEditPerformance, forbidden, MSG } from "@/lib/capabilities";
 import { resolveScope } from "@/lib/scope";
 import { generateInsightsForClient, generateInsightsForAllClients } from "@/lib/insights-engine";
 
 export async function POST(req: Request) {
   const user = await requireModule("insights");
+  if (user.role === "STAFF" && !(await canEditPerformance(user))) return forbidden(MSG.performance);
   const body = await req.json().catch(() => ({}));
   const scope = resolveScope(user, body.clientId);
 

@@ -1,4 +1,5 @@
 import { requireStaffModule } from "@/lib/session";
+import { canEditPerformance } from "@/lib/capabilities";
 import { performanceTabItems } from "@/lib/nav";
 import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { prisma } from "@/lib/prisma";
@@ -14,6 +15,7 @@ import { formatDate } from "@/lib/utils";
 
 export default async function ContasPage() {
   const user = await requireStaffModule("contas");
+  const canEdit = await canEditPerformance(user);
 
   const [accounts, clients, unmatched] = await Promise.all([
     prisma.adAccount.findMany({
@@ -29,11 +31,11 @@ export default async function ContasPage() {
       <PageHeader
         title="Contas"
         description="Contas de Google Ads e Meta Ads conectadas aos clientes"
-        actions={<NewAccountDialog clients={clients} />}
+        actions={canEdit ? <NewAccountDialog clients={clients} /> : undefined}
       />
       <PerformanceTabs items={performanceTabItems(user.role, user.modulePermissions)} active="/contas" />
 
-      <UnmatchedAccountsPanel accounts={unmatched} clients={clients} />
+      {canEdit && <UnmatchedAccountsPanel accounts={unmatched} clients={clients} />}
 
       <Card>
         <CardContent className="p-0">
@@ -65,7 +67,7 @@ export default async function ContasPage() {
                   <TableCell className="font-mono text-xs text-muted">{a.externalId}</TableCell>
                   <TableCell><DataSourceBadge dataSource={a.dataSource} /></TableCell>
                   <TableCell className="text-xs text-muted">{a.lastSyncAt ? formatDate(a.lastSyncAt) : "Nunca"}</TableCell>
-                  <TableCell><SyncButton adAccountId={a.id} /></TableCell>
+                  <TableCell>{canEdit && <SyncButton adAccountId={a.id} />}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

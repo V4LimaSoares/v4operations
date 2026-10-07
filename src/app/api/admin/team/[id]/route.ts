@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { requireStaffModule } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit";
+import { canEditOwnProfile, forbidden, MSG } from "@/lib/capabilities";
 
 const schema = z.object({
   name: z.string().min(2).optional(),
@@ -33,6 +34,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const existing = await prisma.teamMember.findUnique({ where: { id }, select: { userId: true } });
   if (!existing) {
     return NextResponse.json({ error: "Pessoa não encontrada." }, { status: 404 });
+  }
+  if (!(await canEditOwnProfile(actor, id))) return forbidden(MSG.ownProfile);
+
+  // Non-admins may only touch their own contact info. Cargo, status, login link, colour, name and
+  // hire date stay admin-only — otherwise anyone could rename their own cargo to "Account" or
+  // "Gestor de Tráfego" and unlock the cargo-gated edit rights.
+  if (actor.role !== "ADMIN") {
+    const { birthDate, address, email, phone } = parsed.data;
+    parsed.data = { birthDate, address, email, phone };
   }
 
   const data: Record<string, unknown> = { ...parsed.data };
@@ -91,6 +101,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const actor = await requireStaffModule("equipes");
+  if (actor.role !== "ADMIN") return forbidden(MSG.adminOnly);
   const { id } = await params;
   const member = await prisma.teamMember.delete({ where: { id } });
 

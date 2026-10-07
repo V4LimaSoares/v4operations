@@ -89,6 +89,7 @@ export function HealthScoreDialog({
   open: openProp,
   onOpenChange,
   portfolioItems = [],
+  readOnly = false,
 }: {
   entry?: HealthScoreFormEntry;
   clients: { id: string; name: string; company: string }[];
@@ -104,6 +105,8 @@ export function HealthScoreDialog({
    *  do produto" com um clique; esses dois campos continuam texto livre no Health Score (nunca
    *  foram uma FK), então nada além da conveniência de preenchimento muda. */
   portfolioItems?: PortfolioOption[];
+  /** Só quem tem o cargo Account (ou admin) edita; os demais veem o registro travado, sem Editar/Excluir. */
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const [openState, setOpenState] = useState(false);
@@ -231,12 +234,14 @@ export function HealthScoreDialog({
             <div>
               <DialogTitle>{isEdit ? entry!.clientName : "Adicionar registro de Health Score"}</DialogTitle>
               <DialogDescription>
-                {locked
+                {locked && readOnly
+                  ? "Somente leitura — apenas o cargo Account (ou administradores) edita o Health Score."
+                  : locked
                   ? "Registro travado para evitar edição acidental. Clique em Editar para alterar."
                   : "Mesmas informações da planilha de Health Score — dados financeiros, checklist de saúde da conta e probabilidade de churn."}
               </DialogDescription>
             </div>
-            {isEdit && locked && (
+            {isEdit && locked && !readOnly && (
               <Button type="button" size="sm" onClick={() => setLocked(false)} className="shrink-0">
                 <Pencil className="size-3.5" /> Editar
               </Button>
@@ -247,7 +252,7 @@ export function HealthScoreDialog({
         {locked ? (
           <>
             <HealthScoreView form={form} clients={clients} />
-            {form.clientId && (
+            {form.clientId && !readOnly && (
               <DialogFooter className="justify-start sm:justify-start">
                 <Button
                   type="button"

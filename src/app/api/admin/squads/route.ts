@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireStaffModule } from "@/lib/session";
+import { forbidden, MSG } from "@/lib/capabilities";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit";
 
@@ -8,6 +9,7 @@ const schema = z.object({ name: z.string().min(2), logoUrl: z.string().nullish()
 
 export async function POST(req: Request) {
   const actor = await requireStaffModule("equipes");
+  if (actor.role !== "ADMIN") return forbidden(MSG.squad);
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
