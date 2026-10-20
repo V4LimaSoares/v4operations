@@ -51,7 +51,6 @@ export const CLIENT_NAV_GROUPS: NavGroup[] = [
   {
     label: "Performance",
     icon: Gauge,
-    flatten: true,
     items: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/google-ads", label: "Google Ads", icon: GoogleIcon },
@@ -83,7 +82,6 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
   {
     label: "Performance",
     icon: Gauge,
-    flatten: true,
     items: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/google-ads", label: "Google Ads", icon: GoogleIcon },

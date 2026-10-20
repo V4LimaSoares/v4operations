@@ -75,3 +75,17 @@ export async function recordEndedSquadClient(squadId: string, clientId: string, 
     console.error("[assignment-history] falha ao registrar:", err);
   }
 }
+
+/** Ao excluir uma pessoa da equipe, todos os vínculos dela somem em cascata — registra-os antes. */
+export async function recordEndedAllForMember(teamMemberId: string, actor: Actor) {
+  try {
+    const [clients, squads] = await Promise.all([
+      prisma.clientTeamMember.findMany({ where: { teamMemberId }, select: { clientId: true } }),
+      prisma.squadMember.findMany({ where: { teamMemberId }, select: { squadId: true } }),
+    ]);
+    for (const c of clients) await recordEndedClientTeam(c.clientId, teamMemberId, actor);
+    for (const s of squads) await recordEndedSquadMember(s.squadId, teamMemberId, actor);
+  } catch (err) {
+    console.error("[assignment-history] falha ao registrar:", err);
+  }
+}

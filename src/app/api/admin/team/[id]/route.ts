@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { requireStaffModule } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit";
+import { recordEndedAllForMember } from "@/lib/assignment-history";
 import { canEditOwnProfile, forbidden, MSG } from "@/lib/capabilities";
 
 const schema = z.object({
@@ -103,6 +104,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const actor = await requireStaffModule("equipes");
   if (actor.role !== "ADMIN") return forbidden(MSG.adminOnly);
   const { id } = await params;
+  await recordEndedAllForMember(id, actor);
   const member = await prisma.teamMember.delete({ where: { id } });
 
   await logActivity({

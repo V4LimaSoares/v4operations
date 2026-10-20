@@ -27,6 +27,10 @@ function clusterOf(href: string): "overview" | "channels" | "insights" {
 }
 
 export function PerformanceTabs({ items, active, queryString }: { items: NavItem[]; active: string; queryString?: string }) {
+  // As páginas de Performance agora são subtópicos do próprio menu lateral (grupo expansível, com os
+  // filtros carregados entre elas) — a barra de abas ficaria repetida. Continua servindo a
+  // Integrações (Contas/Sincronizações), cujo grupo ainda é um link único com abas na página.
+  if (items.some((item) => item.href === "/dashboard")) return null;
   const help = items.find((item) => item.href === "/ajuda");
   const tabs = items.filter((item) => item.href !== "/ajuda");
 
