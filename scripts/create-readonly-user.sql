@@ -13,6 +13,8 @@ GRANT USAGE ON SCHEMA public TO v4_readonly;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO v4_readonly;
 -- Tabelas criadas por migrações futuras também ficam legíveis:
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO v4_readonly;
--- Segredos que o app local não precisa ler (hashes de senha e token do eKyte continuam existindo,
--- mas o usuário local não os enxerga):
-REVOKE SELECT ON "PasswordResetToken", "EkyteIntegration" FROM v4_readonly;
+-- Segredos que o app local não precisa ler: tokens de redefinição de senha e o token do eKyte.
+-- O status do eKyte continua legível (as telas mostram "desatualizado"), só a coluna apiKey não.
+REVOKE SELECT ON "PasswordResetToken" FROM v4_readonly;
+REVOKE SELECT ON "EkyteIntegration" FROM v4_readonly;
+GRANT SELECT (id, status, "errorMessage", "updatedAt", "updatedByName") ON "EkyteIntegration" TO v4_readonly;
