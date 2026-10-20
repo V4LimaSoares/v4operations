@@ -113,3 +113,5 @@ Operação: Google Ads sem OAuth; `/app/uploads` sem volume confirmado (fotos j�
 Testes locais: rotas principais abrem sem erro; matriz de permissões por cargo verificada com 3 usuários STAFF (Account, Gestor de Tráfego, Designer). **Não verificado em produção.**
 
 **Atualização (2026-10-21):** Contas e Sincronizações saíram do grupo Performance para o novo grupo de menu **Integrações** (mesmos módulos de permissão, mesmas rotas). eKyte: troca de token grava o snapshot na hora, o snapshot diário atualiza o eKyte e vincula clientes por nome exato; dados do eKyte desatualizados ou com erro são ignorados no score e sinalizados na Visão Geral.
+
+**Atualização (2026-10-22):** histórico de atribuições (`AssignmentHistory`: ao desvincular pessoa↔cliente, pessoa↔squad ou cliente↔squad, a cópia com início e fim é guardada; visível na aba Relacionamento do cliente); textos fixos de "29 clientes/grupos" removidos do SLA; `SLA_DASHBOARD_TOKEN` opcional enviado como Bearer (HTTPS é só trocar `NEXT_PUBLIC_SLA_DASHBOARD_URL`, quando a VPS estiver pronta).

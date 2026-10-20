@@ -10,9 +10,17 @@ export * from "@/lib/sla-config";
 // stack and this page — no business logic lives here, just reading what's already generated.
 const SLA_BASE_URL = process.env.NEXT_PUBLIC_SLA_DASHBOARD_URL ?? "http://86.48.18.68:8088";
 
+// Quando o painel da VPS passar a exigir token (e HTTPS — basta apontar NEXT_PUBLIC_SLA_DASHBOARD_URL
+// para https://…), defina SLA_DASHBOARD_TOKEN no EasyPanel: ele é enviado como Bearer. Sem a variável
+// nada muda no comportamento atual.
+const SLA_DASHBOARD_TOKEN = process.env.SLA_DASHBOARD_TOKEN;
+
 async function fetchSlaJson<T>(path: string): Promise<T | null> {
   try {
-    const res = await fetch(`${SLA_BASE_URL}/live/${path}`, { cache: "no-store" });
+    const res = await fetch(`${SLA_BASE_URL}/live/${path}`, {
+      cache: "no-store",
+      headers: SLA_DASHBOARD_TOKEN ? { Authorization: `Bearer ${SLA_DASHBOARD_TOKEN}` } : undefined,
+    });
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireStaffModule } from "@/lib/session";
+import { recordEndedClientTeam } from "@/lib/assignment-history";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit";
 
@@ -63,6 +64,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   if (!teamMemberId) {
     return NextResponse.json({ error: "teamMemberId obrigatório." }, { status: 400 });
   }
+  await recordEndedClientTeam(clientId, teamMemberId, actor);
   await prisma.clientTeamMember.deleteMany({ where: { clientId, teamMemberId } });
 
   const [client, member] = await Promise.all([

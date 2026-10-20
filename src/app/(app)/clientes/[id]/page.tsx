@@ -55,10 +55,11 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
   ]);
   if (!client) notFound();
 
-  const [healthConfig, sharedSignals, snapshots] = await Promise.all([
+  const [healthConfig, sharedSignals, snapshots, assignmentHistory] = await Promise.all([
     getHealthConfig(),
     loadSharedSignals(),
     prisma.healthSnapshot.findMany({ where: { clientId: client.id }, orderBy: { day: "desc" }, take: 30, select: { day: true, score: true } }),
+    prisma.assignmentHistory.findMany({ where: { clientId: client.id }, orderBy: { endedAt: "desc" }, take: 20 }),
   ]);
   const healthResult = await computeClientHealth(client, healthConfig, sharedSignals);
 
@@ -220,6 +221,25 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
             <h3 className="mb-3 text-sm font-semibold">Equipe responsável</h3>
             <TeamLinkPanel clientId={client.id} linked={linkedTeam} available={allTeam} />
           </Card>
+          {assignmentHistory.length > 0 && (
+            <Card className="mb-6 p-5">
+              <h3 className="mb-3 text-sm font-semibold">Histórico de responsáveis</h3>
+              <ul className="divide-y divide-border text-sm">
+                {assignmentHistory.map((h) => (
+                  <li key={h.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                    <span>
+                      <span className="font-medium">{h.kind === "SQUAD_CLIENT" ? `Squad ${h.squadName ?? "—"}` : h.memberName ?? "—"}</span>
+                      {h.role && <span className="text-muted"> · {h.role}</span>}
+                    </span>
+                    <span className="text-xs text-muted">
+                      {formatDate(h.startedAt)} → {formatDate(h.endedAt)}
+                      {h.endedByName ? ` · encerrado por ${h.endedByName}` : ""}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
           <AccountNotesPanel
             clientId={client.id}
             notes={accountNotes.map((n) => ({ ...n, occurredAt: n.occurredAt.toISOString() }))}

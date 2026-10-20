@@ -895,3 +895,27 @@ model SlaSnapshot {
 
   @@index([clientId, takenAt])
 }
+
+// Histórico de vínculos ENCERRADOS (pessoa↔cliente, pessoa↔squad, cliente↔squad). Os vínculos
+// ativos continuam nas tabelas de sempre (com createdAt = início); ao desvincular, a linha antiga
+// é apagada como antes e uma cópia vai para cá com a data de término. Sem chaves estrangeiras de
+// propósito: os nomes são guardados como estavam, então o histórico sobrevive à exclusão de
+// pessoas, clientes ou squads.
+model AssignmentHistory {
+  id           String   @id @default(cuid())
+  kind         String   // CLIENT_TEAM | SQUAD_MEMBER | SQUAD_CLIENT
+  clientId     String?
+  clientName   String?
+  squadId      String?
+  squadName    String?
+  teamMemberId String?
+  memberName   String?
+  role         String?
+  startedAt    DateTime
+  endedAt      DateTime @default(now())
+  endedByName  String?
+
+  @@index([clientId, endedAt])
+  @@index([teamMemberId, endedAt])
+  @@index([squadId, endedAt])
+}

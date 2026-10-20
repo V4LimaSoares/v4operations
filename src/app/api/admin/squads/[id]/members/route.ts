@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireStaffModule } from "@/lib/session";
+import { recordEndedSquadMember } from "@/lib/assignment-history";
 import { forbidden, MSG } from "@/lib/capabilities";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit";
@@ -62,6 +63,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   if (!teamMemberId) {
     return NextResponse.json({ error: "teamMemberId obrigatório." }, { status: 400 });
   }
+  await recordEndedSquadMember(squadId, teamMemberId, actor);
   await prisma.squadMember.deleteMany({ where: { squadId, teamMemberId } });
 
   const [squad, member] = await Promise.all([

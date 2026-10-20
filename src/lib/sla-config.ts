@@ -55,14 +55,14 @@ export const TEAM: Record<PersonKey, TeamMember> = {
     role: "Account",
     colorVar: "var(--c-monica)",
     focus:
-      "Account principal — centraliza a maior parte do contato com os 29 clientes ativos e é marcada automaticamente em todo alerta do monitor de atenção.",
+      "Account principal — centraliza a maior parte do contato com os clientes ativos monitorados e é marcada automaticamente em todo alerta do monitor de atenção.",
     cpc: {
       continuar: [
-        "Maior volume de atendimento da equipe e é quem primeiro responde na maioria dos 29 grupos — o ritmo geral do time depende dela.",
+        "Maior volume de atendimento da equipe e é quem primeiro responde na maioria dos grupos monitorados — o ritmo geral do time depende dela.",
         "É marcada automaticamente em todo alerta (⚠️ e 🚨), então nenhum aviso passa batido — a cobertura funciona.",
       ],
       parar: [
-        "Sozinha concentra praticamente todo o volume de contato — qualquer ausência dela deixa 29 clientes sem cobertura ao mesmo tempo.",
+        "Sozinha concentra praticamente todo o volume de contato — qualquer ausência dela deixa todos os clientes monitorados sem cobertura ao mesmo tempo.",
         "Parte dos atendimentos ultrapassa os 30min de Ponto de Atenção em horário comercial antes de ter resposta.",
       ],
       comecar: [
@@ -81,10 +81,10 @@ export const TEAM: Record<PersonKey, TeamMember> = {
     cpc: {
       continuar: [],
       parar: [
-        "Zero mensagens computadas nos 29 grupos monitorados no período — hoje ela não centraliza contato nenhum cliente rastreado.",
+        "Zero mensagens computadas nos grupos monitorados no período — hoje ela não centraliza contato nenhum cliente rastreado.",
       ],
       comecar: [
-        "Assumir formalmente uma fatia dos 29 clientes, tirando volume da Mônica.",
+        "Assumir formalmente uma fatia dos clientes, tirando volume da Mônica.",
         "Confirmar se o número dela está mapeado corretamente na classificação de sender — pode ser gap de automação, não de atuação real.",
       ],
     },
@@ -157,7 +157,7 @@ export const AUTOMATIONS: Automation[] = [
     icon: "warn",
     tint: "warning",
     name: "Monitor de Ponto de Atenção",
-    desc: "A cada 5 minutos varre os 29 grupos e mede, só em horário comercial, há quanto tempo o cliente está sem resposta do time. Dispara direto pra SLA Accounts, sem aprovação.",
+    desc: "A cada 5 minutos varre os grupos monitorados e mede, só em horário comercial, há quanto tempo o cliente está sem resposta do time. Dispara direto pra SLA Accounts, sem aprovação.",
     schedule: "A cada 5 minutos, contínuo",
     last: "agora há pouco",
     next: "em ≤5 min",
@@ -170,7 +170,7 @@ export const AUTOMATIONS: Automation[] = [
     icon: "mic",
     tint: "positive",
     name: "Overview Diário",
-    desc: "Resume o que foi discutido nos 29 grupos no dia (não é métrica de tempo), com transcrição local e gratuita de áudios via faster-whisper — sem custo de API externa.",
+    desc: "Resume o que foi discutido nos grupos monitorados no dia (não é métrica de tempo), com transcrição local e gratuita de áudios via faster-whisper — sem custo de API externa.",
     schedule: "Dias úteis, 19:00 · janela móvel 19h→19h",
     last: "Qui 02/09, 19:00",
     next: "Hoje, 19:00",
