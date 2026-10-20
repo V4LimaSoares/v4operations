@@ -1,6 +1,6 @@
 import { requireStaffModule } from "@/lib/session";
 import { canEditPerformance } from "@/lib/capabilities";
-import { performanceTabItems } from "@/lib/nav";
+import { integrationTabItems } from "@/lib/nav";
 import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { prisma } from "@/lib/prisma";
 import { listUnmatchedRealAccounts } from "@/lib/data/ad-accounts";
@@ -33,7 +33,7 @@ export default async function ContasPage() {
         description="Contas de Google Ads e Meta Ads conectadas aos clientes"
         actions={canEdit ? <NewAccountDialog clients={clients} /> : undefined}
       />
-      <PerformanceTabs items={performanceTabItems(user.role, user.modulePermissions)} active="/contas" />
+      <PerformanceTabs items={integrationTabItems(user.role, user.modulePermissions)} active="/contas" />
 
       {canEdit && <UnmatchedAccountsPanel accounts={unmatched} clients={clients} />}
 

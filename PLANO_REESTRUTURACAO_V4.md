@@ -111,3 +111,5 @@ Operação: Google Ads sem OAuth; `/app/uploads` sem volume confirmado (fotos j�
 | 5 — Dashboards | **Parcial**: Visão Geral executiva e `SlaSnapshot` feitos; Performance consolidada e SLA por HTTPS pendentes | `30cfe91` |
 
 Testes locais: rotas principais abrem sem erro; matriz de permissões por cargo verificada com 3 usuários STAFF (Account, Gestor de Tráfego, Designer). **Não verificado em produção.**
+
+**Atualização (2026-10-21):** Contas e Sincronizações saíram do grupo Performance para o novo grupo de menu **Integrações** (mesmos módulos de permissão, mesmas rotas). eKyte: troca de token grava o snapshot na hora, o snapshot diário atualiza o eKyte e vincula clientes por nome exato; dados do eKyte desatualizados ou com erro são ignorados no score e sinalizados na Visão Geral.

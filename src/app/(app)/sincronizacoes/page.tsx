@@ -1,6 +1,6 @@
 import { requireStaffModule } from "@/lib/session";
 import { canEditPerformance } from "@/lib/capabilities";
-import { performanceTabItems } from "@/lib/nav";
+import { integrationTabItems } from "@/lib/nav";
 import { PerformanceTabs } from "@/components/layout/performance-tabs";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/layout/page-header";
@@ -40,7 +40,7 @@ export default async function SincronizacoesPage() {
         title="Sincronizações"
         description="Status de sincronização das contas e histórico de execuções"
       />
-      <PerformanceTabs items={performanceTabItems(user.role, user.modulePermissions)} active="/sincronizacoes" />
+      <PerformanceTabs items={integrationTabItems(user.role, user.modulePermissions)} active="/sincronizacoes" />
 
       <Card>
         <CardHeader><CardTitle>Contas conectadas</CardTitle></CardHeader>

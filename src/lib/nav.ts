@@ -22,6 +22,7 @@ import {
   Landmark,
   LibraryBig,
   Briefcase,
+  Plug,
   Settings,
 } from "lucide-react";
 import { MODULES } from "@/lib/permissions";
@@ -85,7 +86,6 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
     flatten: true,
     items: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/contas", label: "Contas", icon: Building2 },
       { href: "/google-ads", label: "Google Ads", icon: GoogleIcon },
       { href: "/meta-ads", label: "Meta Ads", icon: MetaIcon },
       { href: "/campanhas", label: "Campanhas", icon: Megaphone },
@@ -93,8 +93,18 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
       { href: "/insights", label: "Insights", icon: Lightbulb },
       { href: "/faturamento", label: "Faturamento", icon: Wallet },
       { href: "/relatorio", label: "Relatório", icon: FileText },
-      { href: "/sincronizacoes", label: "Sincronizações", icon: RefreshCw },
       { href: "/ajuda", label: "Ajuda", icon: HelpCircle },
+    ],
+  },
+  {
+    // Plumbing técnico (contas de anúncio e sincronização) fora da análise de Performance. Continua
+    // liberado pelos mesmos módulos (contas, sincronizacoes) — só mudou de lugar no menu.
+    label: "Integrações",
+    icon: Plug,
+    flatten: true,
+    items: [
+      { href: "/contas", label: "Contas", icon: Building2 },
+      { href: "/sincronizacoes", label: "Sincronizações", icon: RefreshCw },
     ],
   },
   {
@@ -168,4 +178,10 @@ export function visibleNavGroups(role: "ADMIN" | "STAFF" | "CLIENT", modulePermi
 export function performanceTabItems(role: "ADMIN" | "STAFF" | "CLIENT", modulePermissions: string[]): NavItem[] {
   const groups = role === "CLIENT" ? CLIENT_NAV_GROUPS : visibleNavGroups(role, modulePermissions);
   return groups.find((g) => g.label === "Performance")?.items ?? [];
+}
+
+/** Abas de Integrações (Contas, Sincronizações) — mesma filtragem por permissão do menu. */
+export function integrationTabItems(role: "ADMIN" | "STAFF" | "CLIENT", modulePermissions: string[]): NavItem[] {
+  if (role === "CLIENT") return [];
+  return visibleNavGroups(role, modulePermissions).find((g) => g.label === "Integrações")?.items ?? [];
 }
