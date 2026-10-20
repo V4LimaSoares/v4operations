@@ -80,16 +80,29 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
       />
       <LastModified entityType="Cliente" entityId={client.id} />
 
+      <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm">
+        <HeaderFact label="Squad" value={squad?.name ?? "—"} />
+        <HeaderFact
+          label="Account"
+          value={client.teamMembers.find((t) => t.isPrimary)?.teamMember.name ?? client.teamMembers.find((t) => /account/i.test(t.role ?? ""))?.teamMember.name ?? "—"}
+        />
+        <HeaderFact
+          label="Fee mensal"
+          value={(() => {
+            const active = healthEntries.filter((e) => e.phase.toLowerCase() !== "churn" && e.feeBrl != null);
+            return active.length ? formatBRL(active.reduce((a, e) => a + (e.feeBrl ?? 0), 0)) : "—";
+          })()}
+        />
+        <HeaderFact label="Avaliação do Account" value={healthEntries[0]?.flag ?? "Sem avaliação"} />
+      </div>
+
       <Tabs defaultValue="visao-geral">
         <TabsList>
-          <TabsTrigger value="visao-geral">Visão Geral</TabsTrigger>
+          <TabsTrigger value="visao-geral">Resumo e Saúde</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="sla">SLA</TabsTrigger>
-          <TabsTrigger value="account">Health Score{healthEntries.length > 0 && <Badge className="ml-1.5">{healthEntries.length}</Badge>}</TabsTrigger>
+          <TabsTrigger value="sla">Atendimento</TabsTrigger>
           <TabsTrigger value="operacao">Operação</TabsTrigger>
-          <TabsTrigger value="equipe">Equipe{linkedTeam.length > 0 && <Badge className="ml-1.5">{linkedTeam.length}</Badge>}</TabsTrigger>
-          <TabsTrigger value="portfolio">Portfólio{linkedPortfolio.length > 0 && <Badge className="ml-1.5">{linkedPortfolio.length}</Badge>}</TabsTrigger>
-          <TabsTrigger value="integracoes">Integrações{client.adAccounts.length > 0 && <Badge className="ml-1.5">{client.adAccounts.length}</Badge>}</TabsTrigger>
+          <TabsTrigger value="account">Relacionamento{accountNotes.length > 0 && <Badge className="ml-1.5">{accountNotes.length}</Badge>}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="visao-geral">
@@ -100,6 +113,27 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
             linkedTeam={linkedTeam}
             squad={squad}
           />
+          <div className="mt-6">
+            <HealthTab client={client} entries={healthEntries} portfolioItems={allPortfolioItems} canEdit={hsCanEdit} />
+          </div>
+          <details className="group mt-6 rounded-xl border border-border bg-surface">
+            <summary className="cursor-pointer select-none px-5 py-3 text-sm font-semibold">
+              Cadastro e vínculos
+              <span className="ml-2 text-xs font-normal text-muted">
+                Portfólio ({linkedPortfolio.length}) · Contas de anúncio ({client.adAccounts.length})
+              </span>
+            </summary>
+            <div className="flex flex-col gap-4 border-t border-border p-5">
+              <div>
+                <h3 className="mb-3 text-sm font-semibold">Portfólio contratado</h3>
+                <ClientPortfolioPanel clientId={client.id} linked={linkedPortfolio} available={allPortfolioItems} />
+              </div>
+              <div>
+                <h3 className="mb-3 text-sm font-semibold">Contas de anúncio (integrações)</h3>
+                <IntegracoesTab client={client} />
+              </div>
+            </div>
+          </details>
         </TabsContent>
 
         <TabsContent value="performance">
@@ -153,20 +187,6 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
         </TabsContent>
 
         <TabsContent value="account">
-          <HealthTab client={client} entries={healthEntries} portfolioItems={allPortfolioItems} canEdit={hsCanEdit} />
-          <div className="mt-6">
-            <AccountNotesPanel
-              clientId={client.id}
-              notes={accountNotes.map((n) => ({ ...n, occurredAt: n.occurredAt.toISOString() }))}
-            />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="operacao">
-          <EkyteTab client={client} />
-        </TabsContent>
-
-        <TabsContent value="equipe">
           <Card className="mb-4 p-5">
             <h3 className="mb-3 text-sm font-semibold">Squad</h3>
             {squad ? (
@@ -178,19 +198,18 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
               <p className="text-sm text-muted">Este cliente não pertence a nenhum squad ainda.</p>
             )}
           </Card>
-          <Card className="p-5">
+          <Card className="mb-6 p-5">
+            <h3 className="mb-3 text-sm font-semibold">Equipe responsável</h3>
             <TeamLinkPanel clientId={client.id} linked={linkedTeam} available={allTeam} />
           </Card>
+          <AccountNotesPanel
+            clientId={client.id}
+            notes={accountNotes.map((n) => ({ ...n, occurredAt: n.occurredAt.toISOString() }))}
+          />
         </TabsContent>
 
-        <TabsContent value="portfolio">
-          <Card className="p-5">
-            <ClientPortfolioPanel clientId={client.id} linked={linkedPortfolio} available={allPortfolioItems} />
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="integracoes">
-          <IntegracoesTab client={client} />
+        <TabsContent value="operacao">
+          <EkyteTab client={client} />
         </TabsContent>
       </Tabs>
     </div>
@@ -277,6 +296,15 @@ function OverviewTab({
           </div>
         )}
       </Card>
+    </div>
+  );
+}
+
+function HeaderFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col">
+      <span className="text-[11px] uppercase tracking-wide text-muted-2">{label}</span>
+      <span className="font-medium">{value}</span>
     </div>
   );
 }

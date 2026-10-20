@@ -21,6 +21,8 @@ import {
   FolderOpen,
   Landmark,
   LibraryBig,
+  Briefcase,
+  Settings,
 } from "lucide-react";
 import { MODULES } from "@/lib/permissions";
 
@@ -63,11 +65,19 @@ export const CLIENT_NAV_GROUPS: NavGroup[] = [
   },
 ];
 
+// Sidebar enxuta (plano de reestruturação, etapa 1): 6 destinos + "Gestão interna" + Configurações.
+// Só rótulos e agrupamento mudaram — nenhuma rota foi renomeada ou removida, e os módulos de
+// permissão (src/lib/permissions.ts) são os mesmos, então o acesso de cada usuário não muda.
 export const ADMIN_NAV_GROUPS: NavGroup[] = [
   {
     label: "Visão Geral",
     icon: LayoutDashboard,
     items: [{ href: "/admin", label: "Visão Geral", icon: LayoutDashboard }],
+  },
+  {
+    label: "Clientes",
+    icon: Users,
+    items: [{ href: "/clientes", label: "Clientes", icon: Users }],
   },
   {
     label: "Performance",
@@ -88,9 +98,9 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: "SLA",
+    label: "Atendimento",
     icon: ShieldCheck,
-    items: [{ href: "/controle-sla", label: "SLA", icon: ShieldCheck }],
+    items: [{ href: "/controle-sla", label: "Atendimento", icon: ShieldCheck }],
   },
   {
     label: "Operação",
@@ -98,34 +108,19 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
     items: [{ href: "/ekyte", label: "Operação", icon: KanbanSquare }],
   },
   {
-    label: "Relatórios",
-    icon: FileText,
-    items: [{ href: "/relatorios", label: "Relatórios", icon: FileText }],
-  },
-  {
-    label: "Clientes",
-    icon: Users,
-    items: [{ href: "/clientes", label: "Clientes", icon: Users }],
-  },
-  {
-    label: "Equipes",
+    label: "Equipe",
     icon: UserRound,
-    items: [{ href: "/equipes", label: "Equipes", icon: UserRound }],
+    items: [{ href: "/equipes", label: "Equipe", icon: UserRound }],
   },
   {
-    label: "Materiais Operacionais",
-    icon: FolderOpen,
-    items: [{ href: "/materiais/docs", label: "Materiais Operacionais", icon: FolderOpen }],
-  },
-  {
-    label: "Financeiro",
-    icon: Landmark,
-    items: [{ href: "/financeiro", label: "Financeiro", icon: Landmark }],
-  },
-  {
-    label: "Portfólio",
-    icon: LibraryBig,
-    items: [{ href: "/portfolio", label: "Portfólio", icon: LibraryBig }],
+    label: "Gestão interna",
+    icon: Briefcase,
+    items: [
+      { href: "/relatorios", label: "Relatórios", icon: FileText },
+      { href: "/financeiro", label: "Financeiro", icon: Landmark },
+      { href: "/portfolio", label: "Portfólio", icon: LibraryBig },
+      { href: "/materiais/docs", label: "Materiais Operacionais", icon: FolderOpen },
+    ],
   },
 ];
 
@@ -133,8 +128,8 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
 // itself a grantable module (see src/lib/permissions.ts).
 export const ADMIN_ONLY_NAV_GROUPS: NavGroup[] = [
   {
-    label: "Administração",
-    icon: UserCog,
+    label: "Configurações",
+    icon: Settings,
     items: [
       { href: "/usuarios", label: "Usuários e Permissões", icon: UserCog },
       { href: "/atividades", label: "Atividades", icon: History },
@@ -161,7 +156,7 @@ export function visibleNavGroups(role: "ADMIN" | "STAFF" | "CLIENT", modulePermi
     ...group,
     items: group.items.filter((item) => {
       const path = item.href.split("?")[0];
-      return MODULES.some((m) => m.prefixes.some((p) => path === p) && modulePermissions.includes(m.key));
+      return MODULES.some((m) => m.prefixes.some((p) => path === p || path.startsWith(p + "/")) && modulePermissions.includes(m.key));
     }),
   })).filter((group) => group.items.length > 0);
 }
