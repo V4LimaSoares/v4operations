@@ -12,7 +12,8 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "db:import-real": "tsx prisma/import-real-data.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "pull-prod": "tsx scripts/pull-prod.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

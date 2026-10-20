@@ -6,7 +6,8 @@ export type AuditAction = "criou" | "editou" | "excluiu" | "vinculou" | "desvinc
  *  Atividades and as "Modificado por..." captions. Never throws: a logging failure must not take
  *  down the mutation it's describing, it only gets noted server-side. */
 export async function logActivity(input: {
-  actorId: string;
+  /** Null para ações automatizadas (ex.: pull-prod via segredo), sem usuário logado. */
+  actorId?: string | null;
   actorName: string;
   action: AuditAction;
   entityType: string;
