@@ -99,3 +99,15 @@ Operação: Google Ads sem OAuth; `/app/uploads` sem volume confirmado (fotos j�
 4. Correção do MRR somente após confirmação com dados reais (Etapa 0).
 5. SLA via HTTPS: depende da VPS (fora do app).
 6. Squads atuais: Vanguard, Nexus, Sync.
+
+## 8. Registro de implementação (atualizado em 2026-10-21)
+
+| Etapa | Estado | Commit |
+|---|---|---|
+| 1 — Menu enxuto e Cliente 360° (5 abas) | **Feito** | `7fbd95d` |
+| 2 — Health Score calculado, snapshots, parâmetros versionados, correção de agregados/fee sem Churn | **Feito** | `f8ec72b`, `4208ad8` |
+| 3 — Aba Alocação em Equipe | **Feito** (histórico de atribuições com início/fim: não feito; o histórico fica em Atividades) | `f8ec72b` |
+| 4 — eKyte | **Pendente** (vínculo por ID, data de conclusão, token fora da URL: exigem investigar a API) | — |
+| 5 — Dashboards | **Parcial**: Visão Geral executiva e `SlaSnapshot` feitos; Performance consolidada e SLA por HTTPS pendentes | `30cfe91` |
+
+Testes locais: rotas principais abrem sem erro; matriz de permissões por cargo verificada com 3 usuários STAFF (Account, Gestor de Tráfego, Designer). **Não verificado em produção.**
