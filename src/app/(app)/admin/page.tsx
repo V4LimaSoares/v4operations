@@ -73,6 +73,9 @@ export default async function AdminOverviewPage() {
     prisma.squad.findMany({ include: { _count: { select: { members: true, clients: true } } }, orderBy: { name: "asc" } }),
   ]);
   const overdueTasks = ekyte.tasks.filter(isEkyteOverdue).length;
+  const ekyteIntegration = await prisma.ekyteIntegration.findFirst({ select: { status: true } });
+  const ekyteAgeDays = (Date.now() - new Date(ekyte.generatedAt).getTime()) / 86400000;
+  const ekyteStale = ekyteIntegration?.status === "ERROR" || ekyteAgeDays > 3;
 
   const errorLogs = recentLogs.filter((l) => l.status === "ERROR");
   const clientsAtRisk = healthAggregate.atRisk + healthAggregate.imminentRisk;
@@ -109,7 +112,7 @@ export default async function AdminOverviewPage() {
           />
         </Link>
         <Link href="/ekyte" className="min-w-[170px] flex-1 basis-56">
-          <StatCard label="Entregas atrasadas" value={overdueTasks} icon={ListChecks} formatter={(v) => String(v)} invertDelta />
+          <StatCard label="Entregas atrasadas" value={overdueTasks} icon={ListChecks} formatter={(v) => (ekyteStale ? `${v} (eKyte desatualizado)` : String(v))} invertDelta />
         </Link>
       </div>
 

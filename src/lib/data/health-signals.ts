@@ -28,12 +28,28 @@ export async function getHealthConfig(): Promise<HealthConfig> {
 
 type Shared = {
   ekyteTasks: Awaited<ReturnType<typeof getEkyteSnapshot>>["tasks"];
+  /** Preenchido quando o eKyte não é confiável (token revogado ou dados antigos): as tarefas são
+   *  ignoradas em vez de calcular a Operação sobre um retrato velho — sem dado, não nota. */
+  ekyteStaleReason: string | null;
   monitor: MonitorData | null;
 };
 
+const EKYTE_MAX_AGE_DAYS = 3;
+
 export async function loadSharedSignals(): Promise<Shared> {
-  const [snap, monitor] = await Promise.all([getEkyteSnapshot(), getSlaMonitor()]);
-  return { ekyteTasks: snap.tasks, monitor };
+  const [snap, monitor, integration] = await Promise.all([
+    getEkyteSnapshot(),
+    getSlaMonitor(),
+    prisma.ekyteIntegration.findFirst({ select: { status: true } }),
+  ]);
+  const ageDays = (Date.now() - new Date(snap.generatedAt).getTime()) / 86400000;
+  const ekyteStaleReason =
+    integration?.status === "ERROR"
+      ? "a integração com o eKyte está com erro (token inválido ou revogado)"
+      : ageDays > EKYTE_MAX_AGE_DAYS
+        ? `os dados do eKyte têm ${Math.floor(ageDays)} dias (limite: ${EKYTE_MAX_AGE_DAYS})`
+        : null;
+  return { ekyteTasks: ekyteStaleReason ? [] : snap.tasks, ekyteStaleReason, monitor };
 }
 
 const pct = (n: number) => `${Math.round(n)}%`;
@@ -215,5 +231,9 @@ export async function computeClientHealth(
     operacao: scoreFromIndicators(ops),
     relacionamento: scoreFromIndicators(rel),
   };
-  return computeHealth(dimensions, config, { createdAt: client.createdAt, now });
+  const result = computeHealth(dimensions, config, { createdAt: client.createdAt, now });
+  if (shared.ekyteStaleReason && client.ekyteClientName) {
+    result.notices = [`Operação sem nota: ${shared.ekyteStaleReason}.`];
+  }
+  return result;
 }

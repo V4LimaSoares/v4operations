@@ -63,6 +63,10 @@ export function HealthCalcCard({
         </p>
       )}
 
+      {result.notices?.map((n) => (
+        <p key={n} className="mt-3 rounded-lg bg-surface-2 px-3 py-2 text-xs text-muted">{n}</p>
+      ))}
+
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {DIMENSION_KEYS.map((k) => {
           const d = result.dimensions[k];

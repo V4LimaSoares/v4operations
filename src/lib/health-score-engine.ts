@@ -68,6 +68,8 @@ export type HealthResult = {
   missing: DimensionKey[];
   problems: string[];
   actions: string[];
+  /** Avisos sobre a qualidade das fontes (ex.: eKyte desatualizado) — não entram na nota. */
+  notices?: string[];
 };
 
 /** Média simples dos pontos dos indicadores (cada indicador pesa igual dentro da dimensão). */
