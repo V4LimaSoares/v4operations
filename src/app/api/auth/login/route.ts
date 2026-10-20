@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth";
 import { setSessionCookie } from "@/lib/session";
+import { DB_READONLY } from "@/lib/readonly";
 
 const schema = z.object({
   email: z.string().email(),
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
   if (!valid) {
     const attempts = user.failedLoginAttempts + 1;
     const lockingOut = attempts >= LOCKOUT_THRESHOLD;
-    await prisma.user.update({
+    if (!DB_READONLY) await prisma.user.update({
       where: { id: user.id },
       data: {
         failedLoginAttempts: lockingOut ? 0 : attempts,
@@ -66,10 +67,12 @@ export async function POST(req: Request) {
     modulePermissions: user.modulePermissions,
   });
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { lastLoginAt: new Date(), failedLoginAttempts: 0, lockedUntil: null },
-  });
+  if (!DB_READONLY) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date(), failedLoginAttempts: 0, lockedUntil: null },
+    });
+  }
 
   return NextResponse.json({ ok: true, role: user.role });
 }
