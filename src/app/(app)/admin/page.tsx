@@ -6,6 +6,8 @@ import { presetToRange, getMetricsSummary, getSummaryWithComparison } from "@/li
 import { getHealthScoreAggregate } from "@/lib/data/health-score";
 import { getSlaMonitor } from "@/lib/data/sla";
 import { listRoyalties } from "@/lib/data/financeiro";
+import { HealthSnapshotButton } from "@/components/admin/health-snapshot-button";
+import { CLASSIFICATION_LABEL, type Classification } from "@/lib/health-score-engine";
 import { PageHeader } from "@/components/layout/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -14,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatBRL, formatNumber, formatDate } from "@/lib/utils";
 
 export default async function AdminOverviewPage() {
-  await requireStaffModule("admin_overview");
+  const viewer = await requireStaffModule("admin_overview");
   const range = presetToRange("30d");
 
   const [
@@ -50,6 +52,19 @@ export default async function AdminOverviewPage() {
     getSummaryWithComparison({ clientId: null, isAggregate: true }, range, "all"),
     listRoyalties(),
   ]);
+
+  const latestSnap = await prisma.healthSnapshot.findFirst({ orderBy: { day: "desc" }, select: { day: true } });
+  const snaps = latestSnap
+    ? await prisma.healthSnapshot.findMany({
+        where: { day: latestSnap.day },
+        include: { client: { select: { id: true, name: true } } },
+      })
+    : [];
+  const snapCounts = snaps.reduce<Record<string, number>>((acc, s) => ({ ...acc, [s.classification]: (acc[s.classification] ?? 0) + 1 }), {});
+  const needAttention = snaps
+    .filter((s) => s.classification === "CRITICO" || s.classification === "ATENCAO")
+    .sort((a, b) => (a.score ?? 100) - (b.score ?? 100))
+    .slice(0, 8);
 
   const errorLogs = recentLogs.filter((l) => l.status === "ERROR");
   const clientsAtRisk = healthAggregate.atRisk + healthAggregate.imminentRisk;
@@ -107,6 +122,41 @@ export default async function AdminOverviewPage() {
           formatter={(v) => `${formatBRL(v)}${royaltyPct > 0 ? ` (-${royaltyPct.toFixed(0)}%)` : ""}`}
         />
       </div>
+
+      <Card className="mt-6">
+        <CardHeader className="flex-row items-center justify-between">
+          <CardTitle>Saúde calculada da carteira</CardTitle>
+          {viewer.role === "ADMIN" && <HealthSnapshotButton />}
+        </CardHeader>
+        <CardContent>
+          {!latestSnap ? (
+            <EmptyState message="Ainda não há snapshots. Use “Recalcular agora” para gerar a primeira leitura." className="py-4" />
+          ) : (
+            <div className="flex flex-col gap-4">
+              <p className="text-xs text-muted">Leitura de {formatDate(latestSnap.day)} · {snaps.length} cliente(s) ativos. A avaliação manual do Account continua em Clientes.</p>
+              <div className="flex flex-wrap gap-2">
+                {(["SAUDAVEL", "ATENCAO", "CRITICO", "INSUFICIENTE", "IMPLANTACAO"] as Classification[]).map((c) => (
+                  <Badge key={c} variant={c === "SAUDAVEL" ? "positive" : c === "ATENCAO" ? "warning" : c === "CRITICO" ? "negative" : "default"}>
+                    {CLASSIFICATION_LABEL[c]}: {snapCounts[c] ?? 0}
+                  </Badge>
+                ))}
+              </div>
+              {needAttention.length > 0 && (
+                <ul className="divide-y divide-border text-sm">
+                  {needAttention.map((s) => (
+                    <li key={s.id} className="flex items-center justify-between py-2">
+                      <Link href={`/clientes/${s.client.id}`} className="font-medium hover:text-primary hover:underline">{s.client.name}</Link>
+                      <span className="text-xs text-muted">
+                        {s.score ?? "—"} · {CLASSIFICATION_LABEL[s.classification as Classification]}{s.partial ? " (parcial)" : ""}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>

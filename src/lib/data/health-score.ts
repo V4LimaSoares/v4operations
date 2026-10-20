@@ -59,9 +59,19 @@ export async function getHealthScoreAggregate(clientId?: string, range?: DateRan
   const ongoing = entries.filter((e) => e.phase.toLowerCase() === "ongoing").length;
   const churn = entries.filter((e) => e.phase.toLowerCase() === "churn").length;
 
+  // Um cliente conta uma vez, pela PIOR avaliação entre suas entradas ativas (um cliente com dois
+  // produtos não aparece duas vezes). Entradas em Churn não entram na saúde da carteira.
   let healthy = 0, atRisk = 0, imminentRisk = 0;
+  const rank = { unknown: 0, healthy: 1, risk: 2, imminent: 3 } as const;
+  const worstByClient = new Map<string, keyof typeof rank>();
   for (const e of entries) {
+    if (e.phase.toLowerCase() === "churn") continue;
+    const key = e.clientId ?? e.clientName;
     const n = normalizeFlag(e.flag);
+    const cur = worstByClient.get(key);
+    if (!cur || rank[n] > rank[cur]) worstByClient.set(key, n);
+  }
+  for (const n of worstByClient.values()) {
     if (n === "healthy") healthy++;
     else if (n === "risk") atRisk++;
     else if (n === "imminent") imminentRisk++;
@@ -101,7 +111,8 @@ export async function getHealthScoreAggregate(clientId?: string, range?: DateRan
     atRisk,
     imminentRisk,
     avgChurnProbability,
-    totalFeeBrl: sum(entries.map((e) => e.feeBrl)),
+    // Fee recorrente só de quem está ativo: entradas em Churn não geram receita mensal.
+    totalFeeBrl: sum(entries.filter((e) => e.phase.toLowerCase() !== "churn").map((e) => e.feeBrl)),
     totalRevenueGoalBrl: sum(entries.map((e) => e.revenueGoalBrl)),
     totalRevenueAchievedBrl: sum(entries.map((e) => e.revenueAchievedBrl)),
     totalInvestmentGoalBrl: sum(entries.map((e) => e.investmentGoalBrl)),

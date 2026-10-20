@@ -172,6 +172,7 @@ model Client {
   accountNotes AccountNote[]
   squads       SquadClient[]
   portfolioItems ClientPortfolioItem[]
+  healthSnapshots HealthSnapshot[]
 
   @@index([status])
 }
@@ -846,4 +847,36 @@ model ClientPortfolioItem {
 
   @@id([clientId, itemId])
   @@index([itemId])
+}
+
+// ---------- Health Score calculado (plano de reestruturação, etapa 2) ----------
+// Convive com HealthScoreEntry (avaliação manual do Account); nada ali é alterado.
+
+// Parâmetros do cálculo, versionados: cada alteração cria uma nova linha (version+1) e o snapshot
+// guarda a versão usada, então mudar pesos não reescreve a história.
+model HealthScoreConfig {
+  id            String   @id @default(cuid())
+  version       Int      @unique
+  weights       Json     // { performance, atendimento, operacao, relacionamento } (somam 100)
+  healthyMin    Int      @default(75)
+  attentionMin  Int      @default(50)
+  newClientDays Int      @default(30)
+  createdAt     DateTime @default(now())
+  createdByName String?
+}
+
+model HealthSnapshot {
+  id            String   @id @default(cuid())
+  clientId      String
+  client        Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  day           DateTime @db.Date
+  score         Int?
+  classification String  // SAUDAVEL | ATENCAO | CRITICO | INSUFICIENTE | IMPLANTACAO
+  partial       Boolean  @default(false)
+  dimensions    Json     // { performance: {score, indicators[]} | null, ... }
+  configVersion Int
+  createdAt     DateTime @default(now())
+
+  @@unique([clientId, day])
+  @@index([clientId, day])
 }

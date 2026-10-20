@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requireStaffModule } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 import { canEditHealthScore } from "@/lib/capabilities";
+import { getHealthConfig, loadSharedSignals, computeClientHealth } from "@/lib/data/health-signals";
+import { HealthCalcCard } from "@/components/admin/health-calc-card";
 import { getClientById } from "@/lib/data/clients";
 import { listClientOptions } from "@/lib/scope";
 import { listTeamMembers } from "@/lib/data/team";
@@ -51,6 +54,13 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
     listPortfolioItems(),
   ]);
   if (!client) notFound();
+
+  const [healthConfig, sharedSignals, snapshots] = await Promise.all([
+    getHealthConfig(),
+    loadSharedSignals(),
+    prisma.healthSnapshot.findMany({ where: { clientId: client.id }, orderBy: { day: "desc" }, take: 30, select: { day: true, score: true } }),
+  ]);
+  const healthResult = await computeClientHealth(client, healthConfig, sharedSignals);
 
   const range = presetToRange("30d");
   const scope = { clientId: client.id, isAggregate: false as const };
@@ -106,6 +116,14 @@ export default async function ClienteDetailPage({ params }: { params: Promise<{ 
         </TabsList>
 
         <TabsContent value="visao-geral">
+          <div className="mb-4">
+            <HealthCalcCard
+              result={healthResult}
+              config={healthConfig}
+              manualFlag={healthEntries[0]?.flag ?? null}
+              history={snapshots.reverse().map((s) => ({ day: s.day.toISOString().slice(0, 10), score: s.score }))}
+            />
+          </div>
           <OverviewTab
             client={client}
             current={current}

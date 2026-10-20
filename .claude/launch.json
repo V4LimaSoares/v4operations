@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "portal-trafego-pago",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": ["-c", "cd '/Users/andersonmatheus/Desktop/V4 COMPANY - LIMA SOARES/Projetos/portal-trafego-pago' && exec npm run dev"],
       "port": 3000
     }
   ]

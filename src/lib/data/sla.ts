@@ -49,6 +49,7 @@ const REPORT_TRIGGER_API_KEY = process.env.SLA_REPORT_TRIGGER_API_KEY ?? "";
 export type SlaReportType = "weekly" | "monthly" | "daily";
 
 export async function getLatestSlaReportText(type: SlaReportType) {
+  if (!REPORT_TRIGGER_API_KEY) return null;
   try {
     const res = await fetch(`${REPORT_TRIGGER_URL}/report/latest?type=${type}`, {
       headers: { "X-Api-Key": REPORT_TRIGGER_API_KEY },
@@ -62,6 +63,8 @@ export async function getLatestSlaReportText(type: SlaReportType) {
 }
 
 export async function triggerSlaReport(type: SlaReportType) {
+  // Falha fechado: sem chave configurada não dispara nada (antes enviava "" e dependia do servidor recusar).
+  if (!REPORT_TRIGGER_API_KEY) return { ok: false, output: "SLA_REPORT_TRIGGER_API_KEY não configurada." };
   try {
     const res = await fetch(`${REPORT_TRIGGER_URL}/trigger`, {
       method: "POST",
