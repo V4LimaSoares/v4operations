@@ -48,6 +48,30 @@ export default async function ConfiguracoesPage() {
           </CardContent>
         </Card>
 
+        {user.role === "ADMIN" && (
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Backup dos dados</CardTitle>
+              <CardDescription>
+                Cópia completa do banco (clientes, equipe, Health Score, métricas, notas, fotos e histórico). Senhas e o token do eKyte nunca vão no arquivo.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 text-sm">
+              <div className="flex flex-wrap gap-2">
+                <a href="/api/admin/backup" className="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-white hover:opacity-90">
+                  Baixar backup
+                </a>
+                <a href="/api/admin/backup?files=1" className="inline-flex h-9 items-center rounded-lg border border-border px-4 text-sm font-medium hover:bg-surface-2">
+                  Baixar backup com arquivos (Materiais)
+                </a>
+              </div>
+              <p className="text-xs text-muted">
+                Guarde o arquivo em local privado: ele contém dados pessoais (LGPD). Para trazer os dados de produção para o ambiente local, use <code>npx tsx scripts/restore-backup.ts arquivo.json.gz --yes</code>.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {healthConfig && (
           <Card className="lg:col-span-2">
             <CardHeader>

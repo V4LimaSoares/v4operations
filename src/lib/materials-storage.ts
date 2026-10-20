@@ -1,5 +1,6 @@
 import "server-only";
-import { mkdir, writeFile, unlink, readFile } from "fs/promises";
+import { unlink, readFile } from "fs/promises";
+import { prisma } from "@/lib/prisma";
 import path from "path";
 import crypto from "crypto";
 
@@ -23,18 +24,28 @@ export const ALLOWED_MIME_TYPES: Record<string, string> = {
 };
 
 export async function saveMaterialFile(file: File): Promise<{ filePath: string }> {
-  await mkdir(UPLOAD_DIR, { recursive: true });
   const ext = ALLOWED_MIME_TYPES[file.type] ?? "bin";
   const filePath = `${crypto.randomUUID()}.${ext}`;
   const bytes = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(UPLOAD_DIR, filePath), bytes);
+  // Banco de dados, não disco: o arquivo sobrevive a redeploys e entra nos backups.
+  await prisma.storedFile.create({ data: { key: filePath, mime: file.type, data: bytes } });
   return { filePath };
 }
 
 export async function readMaterialFile(filePath: string): Promise<Buffer> {
-  return readFile(path.join(UPLOAD_DIR, filePath));
+  const stored = await prisma.storedFile.findUnique({ where: { key: filePath } });
+  if (stored) return Buffer.from(stored.data);
+  // Arquivo antigo, ainda só em disco: devolve e já migra para o banco para não se perder.
+  const bytes = await readFile(path.join(UPLOAD_DIR, filePath));
+  await prisma.storedFile.upsert({
+    where: { key: filePath },
+    create: { key: filePath, data: bytes },
+    update: {},
+  }).catch(() => {});
+  return bytes;
 }
 
 export async function deleteMaterialFile(filePath: string): Promise<void> {
+  await prisma.storedFile.deleteMany({ where: { key: filePath } });
   await unlink(path.join(UPLOAD_DIR, filePath)).catch(() => {});
 }

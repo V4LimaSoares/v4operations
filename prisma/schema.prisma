@@ -919,3 +919,13 @@ model AssignmentHistory {
   @@index([teamMemberId, endedAt])
   @@index([squadId, endedAt])
 }
+
+// Arquivos enviados pelos usuários (Materiais Operacionais). Ficam no banco — não em disco — para
+// sobreviverem a qualquer redeploy/recriação do container, e para entrarem nos backups.
+// `key` é o mesmo valor guardado em Material.filePath.
+model StoredFile {
+  key       String   @id
+  mime      String?
+  data      Bytes
+  createdAt DateTime @default(now())
+}

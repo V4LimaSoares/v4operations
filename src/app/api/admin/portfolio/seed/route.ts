@@ -6,7 +6,9 @@ import { PORTFOLIO_SEED_ROWS } from "@/lib/portfolio-seed-data";
 
 // Same catalog import used locally by prisma/seed-portfolio.ts, reachable from the "Importar
 // catálogo" button on /portfolio so it can be run against production without shell/DB access.
-// Upserts by (service, variation): safe to click again, never duplicates.
+// Só CRIA o que falta, por (service, variation): clicar de novo nunca duplica e NUNCA sobrescreve
+// o que alguém já editou no sistema (valor, descrição, categoria) — o catálogo do código é só ponto
+// de partida, a edição feita no ar é a verdade.
 export async function POST() {
   const actor = await requireStaffModule("portfolio");
 
@@ -17,11 +19,7 @@ export async function POST() {
       where: { service: r.service, variation: r.variation },
     });
     if (existing) {
-      await prisma.portfolioItem.update({
-        where: { id: existing.id },
-        data: { category: r.category, valueBrl: r.valueBrl, description: r.description, updatedByName: actor.name },
-      });
-      updated++;
+      updated++; // já existe: preservado como está
     } else {
       await prisma.portfolioItem.create({ data: { ...r, updatedByName: actor.name } });
       created++;
@@ -36,7 +34,7 @@ export async function POST() {
       entityType: "Portfólio",
       entityId: "seed",
       entityLabel: "Importação do catálogo",
-      detail: `${created} criados, ${updated} atualizados`,
+      detail: `${created} criados, ${updated} já existentes (preservados)`,
     });
   }
 
