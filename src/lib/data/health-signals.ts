@@ -116,7 +116,27 @@ export async function computeClientHealth(
 
   // ---- Atendimento: só alertas atuais (sem histórico ainda) e só com grupo vinculado ----
   const att: Indicator[] = [];
-  if (client.slaGroupName && shared.monitor) {
+  // Com histórico (≥5 leituras em 30 dias) a dimensão passa a medir o período, não só o instante.
+  const slaHistory = client.slaGroupName
+    ? await prisma.slaSnapshot.findMany({
+        where: { clientId: client.id, takenAt: { gte: new Date(now.getTime() - 30 * 86400000) } },
+        select: { level: true },
+      })
+    : [];
+  if (slaHistory.length >= 5) {
+    const urgent = slaHistory.filter((h) => h.level === "URGENT").length;
+    const attention = slaHistory.filter((h) => h.level === "ATTENTION").length;
+    const clean = ((slaHistory.length - urgent - attention) / slaHistory.length) * 100;
+    const points = Math.max(0, Math.round(clean - urgent * (50 / slaHistory.length) * 1));
+    att.push({
+      label: "Leituras sem alerta (30 dias)",
+      value: `${Math.round(clean)}% de ${slaHistory.length}`,
+      points,
+      source: "Histórico do monitor de SLA (snapshots)",
+      problem: clean < 80 ? `alertas de atendimento em ${Math.round(100 - clean)}% das leituras recentes` : undefined,
+      action: clean < 80 ? "Revisar a rotina de resposta deste cliente no WhatsApp" : undefined,
+    });
+  } else if (client.slaGroupName && shared.monitor) {
     const match = (m: { group: string }) => `V4 Company + ${m.group}` === client.slaGroupName || m.group === client.slaGroupName;
     const urgent = shared.monitor.urgent.find(match);
     const attention = shared.monitor.attention.find(match);

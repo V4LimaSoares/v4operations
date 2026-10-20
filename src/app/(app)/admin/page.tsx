@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { presetToRange, getMetricsSummary, getSummaryWithComparison } from "@/lib/data/metrics";
 import { getHealthScoreAggregate } from "@/lib/data/health-score";
 import { getSlaMonitor } from "@/lib/data/sla";
+import { getEkyteSnapshot, isEkyteOverdue } from "@/lib/data/ekyte";
+import { ListChecks, UsersRound } from "lucide-react";
 import { listRoyalties } from "@/lib/data/financeiro";
 import { HealthSnapshotButton } from "@/components/admin/health-snapshot-button";
 import { CLASSIFICATION_LABEL, type Classification } from "@/lib/health-score-engine";
@@ -13,7 +15,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
-import { formatBRL, formatNumber, formatDate } from "@/lib/utils";
+import { formatBRL, formatNumber, formatDate, formatDateOnly } from "@/lib/utils";
 
 export default async function AdminOverviewPage() {
   const viewer = await requireStaffModule("admin_overview");
@@ -66,6 +68,12 @@ export default async function AdminOverviewPage() {
     .sort((a, b) => (a.score ?? 100) - (b.score ?? 100))
     .slice(0, 8);
 
+  const [ekyte, squadRows] = await Promise.all([
+    getEkyteSnapshot(),
+    prisma.squad.findMany({ include: { _count: { select: { members: true, clients: true } } }, orderBy: { name: "asc" } }),
+  ]);
+  const overdueTasks = ekyte.tasks.filter(isEkyteOverdue).length;
+
   const errorLogs = recentLogs.filter((l) => l.status === "ERROR");
   const clientsAtRisk = healthAggregate.atRisk + healthAggregate.imminentRisk;
   const slaAlertCount = (slaMonitor?.urgent.length ?? 0) + (slaMonitor?.attention.length ?? 0);
@@ -83,12 +91,6 @@ export default async function AdminOverviewPage() {
 
       <div className="flex flex-wrap gap-4">
         <StatCard className="min-w-[170px] flex-1 basis-56" label="Clientes ativos" value={activeClientCount} icon={Users} formatter={(v) => `${v} / ${clientCount}`} />
-        <StatCard className="min-w-[170px] flex-1 basis-56" label="Contas conectadas" value={accountCount} icon={Building2} formatter={(v) => `${v} (${googleCount} Google · ${metaCount} Meta)`} />
-        <StatCard className="min-w-[170px] flex-1 basis-56" label="Investimento total (30d)" value={summary.costBrl} icon={Wallet} formatter={formatBRL} />
-        <StatCard className="min-w-[170px] flex-1 basis-56" label="Contas com dado real" value={realCount} icon={RefreshCw} formatter={(v) => `${v} / ${accountCount} (${demoCount} demo)`} />
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-4">
         <Link href="/clientes?tab=health-score" className="min-w-[170px] flex-1 basis-56">
           <StatCard
             label="Clientes em risco"
@@ -97,30 +99,18 @@ export default async function AdminOverviewPage() {
             formatter={(v) => `${v} (${healthAggregate.imminentRisk} iminente)`}
           />
         </Link>
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="Fee mensal da carteira" value={mrrBrl} icon={Landmark} formatter={formatBRL} />
         <Link href="/controle-sla" className="min-w-[170px] flex-1 basis-56">
           <StatCard
-            label="Alertas de SLA abertos"
+            label="Alertas de atendimento"
             value={slaAlertCount}
             icon={Siren}
             formatter={(v) => (slaMonitor ? `${v} (${slaMonitor.urgent.length} urgente)` : "Sem conexão")}
           />
         </Link>
-        <StatCard
-          className="min-w-[170px] flex-1 basis-56"
-          label="Faturamento (30d)"
-          value={revenueSummary.current.revenueBrl}
-          previousValue={revenueSummary.previous.revenueBrl}
-          icon={Receipt}
-          formatter={formatBRL}
-        />
-        <StatCard className="min-w-[170px] flex-1 basis-56" label="MRR Lima Soares" value={mrrBrl} icon={Landmark} formatter={formatBRL} />
-        <StatCard
-          className="min-w-[170px] flex-1 basis-56"
-          label="MRR líquido (pós-royalties)"
-          value={mrrNetBrl}
-          icon={PiggyBank}
-          formatter={(v) => `${formatBRL(v)}${royaltyPct > 0 ? ` (-${royaltyPct.toFixed(0)}%)` : ""}`}
-        />
+        <Link href="/ekyte" className="min-w-[170px] flex-1 basis-56">
+          <StatCard label="Entregas atrasadas" value={overdueTasks} icon={ListChecks} formatter={(v) => String(v)} invertDelta />
+        </Link>
       </div>
 
       <Card className="mt-6">
@@ -133,7 +123,7 @@ export default async function AdminOverviewPage() {
             <EmptyState message="Ainda não há snapshots. Use “Recalcular agora” para gerar a primeira leitura." className="py-4" />
           ) : (
             <div className="flex flex-col gap-4">
-              <p className="text-xs text-muted">Leitura de {formatDate(latestSnap.day)} · {snaps.length} cliente(s) ativos. A avaliação manual do Account continua em Clientes.</p>
+              <p className="text-xs text-muted">Leitura de {formatDateOnly(latestSnap.day)} · {snaps.length} cliente(s) ativos. A avaliação manual do Account continua em Clientes.</p>
               <div className="flex flex-wrap gap-2">
                 {(["SAUDAVEL", "ATENCAO", "CRITICO", "INSUFICIENTE", "IMPLANTACAO"] as Classification[]).map((c) => (
                   <Badge key={c} variant={c === "SAUDAVEL" ? "positive" : c === "ATENCAO" ? "warning" : c === "CRITICO" ? "negative" : "default"}>
@@ -157,6 +147,48 @@ export default async function AdminOverviewPage() {
           )}
         </CardContent>
       </Card>
+
+      {squadRows.length > 0 && (
+        <Card className="mt-6">
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2"><UsersRound className="size-4 text-muted" /> Squads</CardTitle>
+            <Link href="/equipes?tab=alocacao" className="text-xs font-medium text-primary hover:underline">Ver alocação</Link>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {squadRows.map((sq) => (
+              <Link key={sq.id} href={`/equipes/squad/${sq.id}`} className="rounded-lg bg-surface-2 p-3 text-sm hover:bg-surface-2/70">
+                <div className="font-medium">{sq.name}</div>
+                <div className="mt-1 text-xs text-muted">
+                  {sq._count.members} pessoa(s) · {sq._count.clients} cliente(s)
+                  {sq._count.members > 0 ? ` · ${(sq._count.clients / sq._count.members).toFixed(1)} por pessoa` : ""}
+                </div>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      <h2 className="mb-3 mt-8 text-xs font-semibold uppercase tracking-wide text-muted-2">Performance e integrações</h2>
+      <div className="flex flex-wrap gap-4">
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="Investimento total (30d)" value={summary.costBrl} icon={Wallet} formatter={formatBRL} />
+        <StatCard
+          className="min-w-[170px] flex-1 basis-56"
+          label="Faturamento lançado (30d)"
+          value={revenueSummary.current.revenueBrl}
+          previousValue={revenueSummary.previous.revenueBrl}
+          icon={Receipt}
+          formatter={formatBRL}
+        />
+        <StatCard
+          className="min-w-[170px] flex-1 basis-56"
+          label="Fee líquido (pós-royalties)"
+          value={mrrNetBrl}
+          icon={PiggyBank}
+          formatter={(v) => `${formatBRL(v)}${royaltyPct > 0 ? ` (-${royaltyPct.toFixed(0)}%)` : ""}`}
+        />
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="Contas conectadas" value={accountCount} icon={Building2} formatter={(v) => `${v} (${googleCount} Google · ${metaCount} Meta)`} />
+        <StatCard className="min-w-[170px] flex-1 basis-56" label="Contas com dado real" value={realCount} icon={RefreshCw} formatter={(v) => `${v} / ${accountCount} (${demoCount} demo)`} />
+      </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>

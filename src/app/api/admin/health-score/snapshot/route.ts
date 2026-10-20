@@ -22,6 +22,19 @@ export async function POST(req: Request) {
     }),
   ]);
 
+  // Histórico de SLA: o monitor só expõe o estado atual, então registramos o nível por cliente a
+  // cada rodada (só se o monitor respondeu — sem resposta não gravamos "NONE" por engano).
+  if (shared.monitor) {
+    const levelOf = (group: string) => {
+      const match = (m: { group: string }) => `V4 Company + ${m.group}` === group || m.group === group;
+      return shared.monitor!.urgent.some(match) ? "URGENT" : shared.monitor!.attention.some(match) ? "ATTENTION" : "NONE";
+    };
+    const linked = clients.filter((c) => c.slaGroupName);
+    if (linked.length > 0) {
+      await prisma.slaSnapshot.createMany({ data: linked.map((c) => ({ clientId: c.id, level: levelOf(c.slaGroupName!) })) });
+    }
+  }
+
   const day = new Date(new Date().toISOString().slice(0, 10));
   const counts: Record<string, number> = {};
   for (const c of clients) {

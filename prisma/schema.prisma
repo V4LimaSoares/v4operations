@@ -173,6 +173,7 @@ model Client {
   squads       SquadClient[]
   portfolioItems ClientPortfolioItem[]
   healthSnapshots HealthSnapshot[]
+  slaSnapshots SlaSnapshot[]
 
   @@index([status])
 }
@@ -879,4 +880,18 @@ model HealthSnapshot {
 
   @@unique([clientId, day])
   @@index([clientId, day])
+}
+
+// Histórico do monitor de SLA: o monitor da VPS só expõe o estado ATUAL, então cada rodada do
+// snapshot grava aqui o nível de alerta de cada cliente com grupo vinculado — é o que permite
+// medir atendimento ao longo do tempo (dimensão Atendimento do Health Score). Não guarda nenhuma
+// mensagem do WhatsApp, só o nível de alerta.
+model SlaSnapshot {
+  id      String   @id @default(cuid())
+  clientId String
+  client  Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  takenAt DateTime @default(now())
+  level   String   // NONE | ATTENTION | URGENT
+
+  @@index([clientId, takenAt])
 }
