@@ -4,9 +4,12 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { ChangePasswordForm } from "@/components/dashboard/change-password-form";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
+import { getHealthConfig } from "@/lib/data/health-signals";
+import { HealthConfigForm } from "@/components/admin/health-config-form";
 
 export default async function ConfiguracoesPage() {
   const user = await requireModule("configuracoes");
+  const healthConfig = user.role === "ADMIN" ? await getHealthConfig() : null;
 
   return (
     <div>
@@ -44,6 +47,18 @@ export default async function ConfiguracoesPage() {
             <ChangePasswordForm />
           </CardContent>
         </Card>
+
+        {healthConfig && (
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Parâmetros do Health Score</CardTitle>
+              <CardDescription>Pesos das dimensões e faixas de classificação (somente administradores)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <HealthConfigForm config={healthConfig} />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
