@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit";
-import { fetchEkyteTasksFromApi, setEkyteIntegrationStatus } from "@/lib/ekyte-api";
+import { refreshEkyteSnapshot } from "@/lib/ekyte-api";
 
 const schema = z.object({ apiKey: z.string().min(10) });
 
@@ -37,15 +37,13 @@ export async function PATCH(req: Request) {
     detail: "Token da API atualizado",
   });
 
-  // Test the newly saved token right away, so the banner clears immediately if it works instead
-  // of waiting for the next scheduled/manual refresh.
+  // Testa o token novo e, se funcionar, já grava o snapshot: o banner some e os dados (Operação,
+  // Health Score) voltam a ser atuais sem depender de alguém clicar em "Atualizar agora".
   try {
-    await fetchEkyteTasksFromApi();
-    await setEkyteIntegrationStatus("OK", null);
-    return NextResponse.json({ ok: true });
+    const result = await refreshEkyteSnapshot();
+    return NextResponse.json({ ok: true, taskCount: result.taskCount });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Falha ao testar o token.";
-    await setEkyteIntegrationStatus("ERROR", message);
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }

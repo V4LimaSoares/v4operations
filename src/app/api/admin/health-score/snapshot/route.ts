@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
+import { refreshEkyteSnapshot } from "@/lib/ekyte-api";
 import { getHealthConfig, loadSharedSignals, computeClientHealth } from "@/lib/data/health-signals";
 
 // Grava o snapshot diário do Health Score calculado de todos os clientes ativos — é o que forma o
@@ -12,6 +13,20 @@ export async function POST(req: Request) {
   const user = await getCurrentUser();
   const authorized = (secret && bearer && bearer === secret) || user?.role === "ADMIN";
   if (!authorized) return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
+
+  // Mantém o eKyte fresco por conta própria: se a integração não está com erro e o retrato tem
+  // mais de 12h, atualiza antes de calcular (falha aqui não impede o snapshot — o cálculo só
+  // ignora o eKyte desatualizado e avisa).
+  try {
+    const [integ, latest] = await Promise.all([
+      prisma.ekyteIntegration.findFirst({ select: { status: true, apiKey: true } }),
+      prisma.ekyteSnapshot.findFirst({ orderBy: { generatedAt: "desc" }, select: { generatedAt: true } }),
+    ]);
+    const old = !latest || Date.now() - latest.generatedAt.getTime() > 12 * 3600 * 1000;
+    if (integ?.apiKey && integ.status !== "ERROR" && old) await refreshEkyteSnapshot();
+  } catch {
+    /* status da integração já foi gravado por refreshEkyteSnapshot */
+  }
 
   const [config, shared, clients] = await Promise.all([
     getHealthConfig(),

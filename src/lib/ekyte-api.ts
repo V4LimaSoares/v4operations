@@ -96,3 +96,54 @@ export async function fetchEkyteTasksFromApi(): Promise<EkyteTask[]> {
 
   return tasks;
 }
+
+/** Busca as tarefas no eKyte e grava um novo snapshot (carregando adiante as horas apontadas, que
+ *  não têm endpoint). Atualiza o status da integração (OK/ERROR). Usado pelo botão "Atualizar
+ *  agora", pela troca de token e pelo snapshot diário do Health Score — assim ninguém precisa
+ *  lembrar de clicar depois que o token é corrigido. Lança erro se o eKyte recusar. */
+export async function refreshEkyteSnapshot(preFetched?: EkyteTask[]) {
+  let tasks: EkyteTask[];
+  try {
+    tasks = preFetched ?? (await fetchEkyteTasksFromApi());
+  } catch (err) {
+    await setEkyteIntegrationStatus("ERROR", err instanceof Error ? err.message : "Falha ao buscar dados do Ekyte.");
+    throw err;
+  }
+  await setEkyteIntegrationStatus("OK", null);
+  const previous = await prisma.ekyteSnapshot.findFirst({ orderBy: { generatedAt: "desc" } });
+  const snapshot = await prisma.ekyteSnapshot.create({
+    data: { tasksJson: tasks, timeJson: previous?.timeJson ?? [] },
+  });
+  const linked = await autoLinkEkyteClients(tasks).catch(() => 0);
+  return { id: snapshot.id, generatedAt: snapshot.generatedAt, taskCount: tasks.length, linked };
+}
+
+const normName = (v: string) =>
+  v
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+/** Vincula sozinho clientes ainda sem `ekyteClientName` ao workspace do eKyte de mesmo nome
+ *  (comparação sem acento/caixa/pontuação, só igualdade — nada de "parecido"). Só preenche campo
+ *  vazio e só quando o nome bate com exatamente um cliente e um workspace; o resto continua manual. */
+export async function autoLinkEkyteClients(tasks: EkyteTask[]): Promise<number> {
+  const workspaces = [...new Set(tasks.map((t) => t.client).filter(Boolean))];
+  const unlinked = await prisma.client.findMany({
+    where: { ekyteClientName: null },
+    select: { id: true, name: true, company: true },
+  });
+  let count = 0;
+  for (const ws of workspaces) {
+    const key = normName(ws);
+    const matches = unlinked.filter((c) => normName(c.name) === key || normName(c.company) === key);
+    const sameKeyWs = workspaces.filter((w) => normName(w) === key);
+    if (matches.length === 1 && sameKeyWs.length === 1) {
+      await prisma.client.update({ where: { id: matches[0].id }, data: { ekyteClientName: ws } });
+      count++;
+    }
+  }
+  return count;
+}
